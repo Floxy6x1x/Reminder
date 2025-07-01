@@ -482,7 +482,7 @@
         .sound-toggle {
             position: absolute;
             top: 20px;
-            right: 20px;
+            right: 70px;
             background: rgba(255, 255, 255, 0.2);
             border: none;
             color: var(--primary);
@@ -506,6 +506,56 @@
         .sound-toggle.muted {
             color: var(--text-light);
             background: rgba(200, 200, 200, 0.2);
+        }
+
+        .alerts-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: var(--warning);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .alerts-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .alerts-toggle.disabled {
+            color: var(--text-light);
+            background: rgba(200, 200, 200, 0.2);
+        }
+
+        .alerts-banner {
+            background: linear-gradient(135deg, var(--warning), #e67e22);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+            animation: pulse 2s infinite alternate;
+        }
+
+        .alerts-banner.show {
+            display: block;
+        }
+
+        @keyframes pulse {
+            from { opacity: 0.8; }
+            to { opacity: 1; }
         }
 
         @media (max-width: 768px) {
@@ -672,8 +722,17 @@
             <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" title="Activează/Dezactivează sunetele">
                 🔊
             </button>
+            <button class="alerts-toggle" id="alertsToggle" onclick="toggleAlerts()" title="Activează/Dezactivează alertele cu 10 min înainte">
+                ⏰
+            </button>
             <h1>⏰ Reminder PWA</h1>
             <p>Organizează-ți sarcinile și reminder-urile</p>
+            
+            <!-- Alerts Banner -->
+            <div class="alerts-banner" id="alertsBanner">
+                🔔 Alertele cu 10 minute înainte sunt active
+            </div>
+            
             <div class="stats">
                 <div class="stat-card">
                     <span class="stat-number" id="totalReminders">0</span>
@@ -832,6 +891,23 @@
                 
                 // Notification sound (gentle bell)
                 this.sounds.notification = this.createTone([880, 1108.73], 0.25, 'sine');
+                
+                // Pre-alert sound (urgent but pleasant chime)
+                this.sounds.prealert = this.createMelody([
+                    {freq: 880, duration: 0.15},
+                    {freq: 1108.73, duration: 0.15},
+                    {freq: 880, duration: 0.15},
+                    {freq: 1396.91, duration: 0.3}
+                ]);
+                
+                // Urgent alert sound (more insistent)
+                this.sounds.urgent = this.createMelody([
+                    {freq: 1396.91, duration: 0.1},
+                    {freq: 1108.73, duration: 0.1},
+                    {freq: 1396.91, duration: 0.1},
+                    {freq: 1108.73, duration: 0.1},
+                    {freq: 1760, duration: 0.2}
+                ]);
             }
 
             createTone(frequencies, duration, waveType = 'sine') {
@@ -926,9 +1002,178 @@
         // Initialize sound system
         const soundManager = new SoundManager();
 
+        // Alert Management System
+        class AlertManager {
+            constructor() {
+                this.enabled = localStorage.getItem('alertsEnabled') !== 'false';
+                this.alertMinutes = 10; // Minutes before reminder
+                this.notifiedReminders = new Set(); // Track already notified reminders
+                this.checkInterval = null;
+                this.updateAlertsToggle();
+                this.startChecking();
+                this.requestNotificationPermission();
+            }
+
+            async requestNotificationPermission() {
+                if ('Notification' in window && Notification.permission === 'default') {
+                    try {
+                        const permission = await Notification.requestPermission();
+                        if (permission === 'granted') {
+                            console.log('Notification permission granted');
+                        }
+                    } catch (error) {
+                        console.warn('Could not request notification permission:', error);
+                    }
+                }
+            }
+
+            startChecking() {
+                if (this.checkInterval) {
+                    clearInterval(this.checkInterval);
+                }
+                
+                if (this.enabled) {
+                    // Check every 30 seconds for more accuracy
+                    this.checkInterval = setInterval(() => {
+                        this.checkUpcomingReminders();
+                    }, 30000);
+                    
+                    // Also check immediately
+                    setTimeout(() => this.checkUpcomingReminders(), 1000);
+                }
+            }
+
+            stopChecking() {
+                if (this.checkInterval) {
+                    clearInterval(this.checkInterval);
+                    this.checkInterval = null;
+                }
+            }
+
+            checkUpcomingReminders() {
+                if (!this.enabled) return;
+
+                const now = new Date();
+                const reminders = storage.getReminders();
+                
+                reminders.forEach(reminder => {
+                    if (reminder.completed || !reminder.date) return;
+                    
+                    const reminderDateTime = new Date(reminder.date + (reminder.time ? 'T' + reminder.time : 'T23:59'));
+                    const alertTime = new Date(reminderDateTime.getTime() - (this.alertMinutes * 60 * 1000));
+                    
+                    // Check if we should alert now (within 1 minute window)
+                    const timeDiff = alertTime.getTime() - now.getTime();
+                    const isTimeForAlert = timeDiff <= 30000 && timeDiff >= -30000; // 30 second window
+                    
+                    if (isTimeForAlert && !this.notifiedReminders.has(reminder.id)) {
+                        this.sendPreAlert(reminder);
+                        this.notifiedReminders.add(reminder.id);
+                        
+                        // Clean up old notifications after reminder time has passed
+                        setTimeout(() => {
+                            this.notifiedReminders.delete(reminder.id);
+                        }, (this.alertMinutes + 60) * 60 * 1000); // Clean up 1 hour after reminder
+                    }
+                });
+            }
+
+            sendPreAlert(reminder) {
+                const timeStr = reminder.time || '23:59';
+                const dateStr = new Date(reminder.date).toLocaleDateString('ro-RO');
+                
+                // Play pre-alert sound
+                soundManager.play('prealert');
+                
+                // Show in-app notification
+                showNotification(
+                    `🔔 Reminder în ${this.alertMinutes} minute: ${reminder.title}`, 
+                    'warning'
+                );
+                
+                // Send browser notification if permission granted
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    try {
+                        const notification = new Notification(`⏰ Reminder în ${this.alertMinutes} minute`, {
+                            body: `${reminder.title}\n📅 ${dateStr} la ${timeStr}`,
+                            icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>",
+                            badge: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>",
+                            tag: `reminder-${reminder.id}`,
+                            requireInteraction: true,
+                            silent: false
+                        });
+                        
+                        // Auto close after 10 seconds
+                        setTimeout(() => notification.close(), 10000);
+                        
+                        // Handle click
+                        notification.onclick = function() {
+                            window.focus();
+                            notification.close();
+                        };
+                        
+                    } catch (error) {
+                        console.warn('Could not send notification:', error);
+                    }
+                }
+                
+                // Vibrate if supported
+                if (navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200, 100, 200]);
+                }
+                
+                console.log(`🔔 Pre-alert sent for: ${reminder.title} at ${new Date().toLocaleTimeString()}`);
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                localStorage.setItem('alertsEnabled', this.enabled.toString());
+                this.updateAlertsToggle();
+                
+                if (this.enabled) {
+                    this.startChecking();
+                    soundManager.play('notification');
+                    showNotification('🔔 Alertele cu 10 minute înainte sunt activate!', 'success');
+                } else {
+                    this.stopChecking();
+                    showNotification('🔕 Alertele cu 10 minute înainte sunt dezactivate', 'warning');
+                }
+            }
+
+            updateAlertsToggle() {
+                const toggle = document.getElementById('alertsToggle');
+                const banner = document.getElementById('alertsBanner');
+                
+                if (toggle) {
+                    toggle.textContent = this.enabled ? '🔔' : '🔕';
+                    toggle.classList.toggle('disabled', !this.enabled);
+                    toggle.title = this.enabled ? 
+                        'Dezactivează alertele cu 10 min înainte' : 
+                        'Activează alertele cu 10 min înainte';
+                }
+                
+                if (banner) {
+                    banner.classList.toggle('show', this.enabled);
+                }
+            }
+
+            // Clean notifications for deleted reminders
+            cleanupNotifications(deletedReminderId) {
+                this.notifiedReminders.delete(deletedReminderId);
+            }
+        }
+
+        // Initialize alert system
+        const alertManager = new AlertManager();
+
         // Sound toggle function
         function toggleSound() {
             soundManager.toggle();
+        }
+
+        // Alerts toggle function
+        function toggleAlerts() {
+            alertManager.toggle();
         }
 
         // Enable audio on first user interaction
@@ -1149,6 +1394,12 @@
             const reminder = storage.getReminders().find(r => r.id === id);
             if (reminder) {
                 storage.updateReminder(id, { completed: !reminder.completed });
+                
+                // If marking as completed, clean up any pending alerts
+                if (!reminder.completed) { // Will be completed after update
+                    alertManager.cleanupNotifications(id);
+                }
+                
                 renderReminders();
                 updateStats();
                 
@@ -1214,6 +1465,7 @@
         function deleteReminder(id) {
             if (confirm('Sigur doriți să ștergeți acest reminder?')) {
                 storage.deleteReminder(id);
+                alertManager.cleanupNotifications(id); // Clean up alert notifications
                 renderReminders();
                 updateStats();
                 
@@ -1226,6 +1478,11 @@
         // Clear All
         function clearAllReminders() {
             if (confirm('Sigur doriți să ștergeți toate reminder-urile?')) {
+                // Clean up all alert notifications
+                storage.getReminders().forEach(reminder => {
+                    alertManager.cleanupNotifications(reminder.id);
+                });
+                
                 storage.clear();
                 renderReminders();
                 updateStats();
@@ -1292,6 +1549,27 @@
                     new Date(reminder.date).toLocaleDateString('ro-RO') : '';
                 
                 const timeDisplay = reminder.time || '';
+                
+                // Calculate time until alert
+                let alertInfo = '';
+                if (reminder.date && reminder.time && !reminder.completed && alertManager.enabled) {
+                    const reminderDateTime = new Date(reminder.date + 'T' + reminder.time);
+                    const alertTime = new Date(reminderDateTime.getTime() - (10 * 60 * 1000));
+                    const now = new Date();
+                    
+                    if (alertTime > now) {
+                        const hoursUntilAlert = Math.floor((alertTime - now) / (1000 * 60 * 60));
+                        const minutesUntilAlert = Math.floor(((alertTime - now) % (1000 * 60 * 60)) / (1000 * 60));
+                        
+                        if (hoursUntilAlert > 0) {
+                            alertInfo = `<div class="reminder-date" style="color: var(--primary);">🔔 Alertă în ${hoursUntilAlert}h ${minutesUntilAlert}m</div>`;
+                        } else if (minutesUntilAlert > 0) {
+                            alertInfo = `<div class="reminder-date" style="color: var(--primary);">🔔 Alertă în ${minutesUntilAlert} minute</div>`;
+                        } else {
+                            alertInfo = `<div class="reminder-date" style="color: var(--warning);">🔔 Alertă în curând!</div>`;
+                        }
+                    }
+                }
 
                 return `
                     <div class="reminder-item ${reminder.completed ? 'completed' : ''} priority-${reminder.priority} ${isOverdue ? 'overdue' : ''}">
@@ -1317,6 +1595,7 @@
                                   reminder.priority === 'medium' ? '🟡 Medie' : '🟢 Scăzută'}
                             </div>
                             ${isOverdue ? '<div class="reminder-date" style="color: var(--danger);">⚠️ Întârziat</div>' : ''}
+                            ${alertInfo}
                         </div>
                     </div>
                 `;
@@ -1382,6 +1661,22 @@
             renderReminders();
             updateStats();
             updateNetworkStatus();
+            
+            // Show alert status if enabled
+            if (alertManager.enabled) {
+                const upcomingWithTime = storage.getReminders().filter(r => 
+                    !r.completed && r.date && r.time
+                ).length;
+                
+                if (upcomingWithTime > 0) {
+                    setTimeout(() => {
+                        showNotification(
+                            `🔔 Sistem de alertă activ - ${upcomingWithTime} reminder${upcomingWithTime > 1 ? '-uri' : ''} cu oră programată`, 
+                            'success'
+                        );
+                    }, 2000);
+                }
+            }
             
             // Check for overdue reminders after 3 seconds
             setTimeout(checkOverdueReminders, 3000);
