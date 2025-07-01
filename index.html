@@ -1,1 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminder PWA</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#6C5CE7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Reminder PWA">
+    <meta name="description" content="Aplicație PWA pentru gestionarea reminder-urilor și task-urilor">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
+    
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --primary-dark: #5A4FCF;
+            --secondary: #74B9FF;
+            --success: #00B894;
+            --warning: #FDCB6E;
+            --danger: #E17055;
+            --background: #F8F9FE;
+            --surface: #FFFFFF;
+            --text: #2D3436;
+            --text-light: #636E72;
+            --border: #DDD6FE;
+            --shadow: rgba(108, 92, 231, 0.15);
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px var(--shadow);
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .quick-add {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--surface);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .datetime-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .priority-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .priority-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .priority-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .priority-btn.low.active {
+            border-color: var(--success);
+            background: var(--success);
+        }
+
+        .priority-btn.high.active {
+            border-color: var(--danger);
+            background: var(--danger);
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        .filters {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--background);
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .filter-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            background: var(--background);
+        }
+
+        .reminders-list {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .reminder-item {
+            background: var(--background);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--border);
+            position: relative;
+        }
+
+        .reminder-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .reminder-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .reminder-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .reminder-item.priority-high {
+            border-left-color: var(--danger);
+            background: linear-gradient(135deg, #fff, #fff5f5);
+        }
+
+        .reminder-item.priority-medium {
+            border-left-color: var(--warning);
+            background: linear-gradient(135deg, #fff, #fffbf0);
+        }
+
+        .reminder-item.priority-low {
+            border-left-color: var(--success);
+            background: linear-gradient(135deg, #fff, #f0fff4);
+        }
+
+        .reminder-item.overdue {
+            border-left-color: var(--danger);
+            background: linear-gradient(135deg, #fff, #ffebee);
+        }
+
+        .reminder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .reminder-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+            margin-right: 12px;
+        }
+
+        .reminder-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.complete {
+            background: var(--success);
+            color: white;
+        }
+
+        .action-btn.edit {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .action-btn.delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .reminder-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .reminder-date {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reminder-priority {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .reminder-priority.high {
+            background: rgba(225, 112, 85, 0.1);
+            color: var(--danger);
+        }
+
+        .reminder-priority.medium {
+            background: rgba(253, 203, 110, 0.1);
+            color: var(--warning);
+        }
+
+        .reminder-priority.low {
+            background: rgba(0, 184, 148, 0.1);
+            color: var(--success);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .install-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+            position: relative;
+        }
+
+        .install-banner.show {
+            display: block;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .install-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 320px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--danger);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-number {
+                font-size: 20px;
+            }
+
+            .datetime-group {
+                grid-template-columns: 1fr;
+            }
+
+            .input-field {
+                padding: 14px 16px;
+                font-size: 16px;
+            }
+
+            .reminder-title {
+                font-size: 16px;
+            }
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--text-light);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Install Banner -->
+        <div class="install-banner" id="installBanner">
+            <button class="install-close" onclick="hideInstallBanner()">✕</button>
+            <h3>📱 Instalează Aplicația</h3>
+            <p>Adaugă pe ecranul principal pentru acces rapid!</p>
+            <button class="btn btn-primary" onclick="installApp()" style="margin-top: 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+                📲 Instalează Acum
+            </button>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>⏰ Reminder PWA</h1>
+            <p>Organizează-ți sarcinile și reminder-urile</p>
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalReminders">0</span>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="pendingReminders">0</span>
+                    <div class="stat-label">Pendente</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="overdueReminders">0</span>
+                    <div class="stat-label">Întârziate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Add Form -->
+        <div class="quick-add">
+            <div class="input-group">
+                <input type="text" class="input-field" id="reminderTitle" placeholder="Adaugă un reminder nou..." maxlength="100">
+            </div>
+            
+            <div class="datetime-group">
+                <input type="date" class="input-field" id="reminderDate">
+                <input type="time" class="input-field" id="reminderTime">
+            </div>
+
+            <div class="priority-group">
+                <button class="priority-btn low" data-priority="low">🟢 Scăzută</button>
+                <button class="priority-btn active" data-priority="medium">🟡 Medie</button>
+                <button class="priority-btn high" data-priority="high">🔴 Ridicată</button>
+            </div>
+
+            <button class="add-btn" onclick="addReminder()">
+                ➕ Adaugă Reminder
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">Toate</button>
+                <button class="filter-tab" data-filter="pending">Pendente</button>
+                <button class="filter-tab" data-filter="completed">Completate</button>
+                <button class="filter-tab" data-filter="overdue">Întârziate</button>
+            </div>
+            <input type="text" class="search-box" id="searchBox" placeholder="Caută reminder-uri...">
+        </div>
+
+        <!-- Reminders List -->
+        <div class="reminders-list" id="remindersList">
+            <div class="empty-state">
+                <div class="icon">⏰</div>
+                <h3>Niciun reminder</h3>
+                <p>Adaugă primul tău reminder folosind formularul de mai sus</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Editează Reminder</h3>
+                <button class="modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Titlu</label>
+                <input type="text" class="form-input" id="editTitle" maxlength="100">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Data</label>
+                <input type="date" class="form-input" id="editDate">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ora</label>
+                <input type="time" class="form-input" id="editTime">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prioritate</label>
+                <div class="priority-group" id="editPriorityGroup">
+                    <button class="priority-btn low" data-priority="low">🟢 Scăzută</button>
+                    <button class="priority-btn" data-priority="medium">🟡 Medie</button>
+                    <button class="priority-btn high" data-priority="high">🔴 Ridicată</button>
+                </div>
+            </div>
+
+            <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveEditedReminder()">💾 Salvează</button>
+                <button class="btn btn-secondary" onclick="closeEditModal()">❌ Anulează</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div id="notificationContent"></div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        📵 Offline - Datele sunt salvate local
+    </div>
+
+    <script>
+        // PWA Storage System
+        class PWAStorage {
+            constructor() {
+                this.storageKey = 'reminder_pwa_data';
+                this.data = this.loadData();
+            }
+
+            loadData() {
+                try {
+                    const stored = localStorage.getItem(this.storageKey);
+                    return stored ? JSON.parse(stored) : { reminders: [] };
+                } catch (error) {
+                    console.warn('Failed to load data:', error);
+                    return { reminders: [] };
+                }
+            }
+
+            save() {
+                try {
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+                    return true;
+                } catch (error) {
+                    console.warn('Failed to save data:', error);
+                    return false;
+                }
+            }
+
+            getReminders() {
+                return this.data.reminders || [];
+            }
+
+            addReminder(reminder) {
+                reminder.id = Date.now().toString();
+                reminder.createdAt = new Date().toISOString();
+                this.data.reminders.push(reminder);
+                this.save();
+                return reminder;
+            }
+
+            updateReminder(id, updates) {
+                const index = this.data.reminders.findIndex(r => r.id === id);
+                if (index !== -1) {
+                    this.data.reminders[index] = { ...this.data.reminders[index], ...updates };
+                    this.save();
+                    return this.data.reminders[index];
+                }
+                return null;
+            }
+
+            deleteReminder(id) {
+                this.data.reminders = this.data.reminders.filter(r => r.id !== id);
+                this.save();
+            }
+
+            clear() {
+                this.data = { reminders: [] };
+                localStorage.removeItem(this.storageKey);
+            }
+        }
+
+        // Initialize storage
+        const storage = new PWAStorage();
+        let currentFilter = 'all';
+        let editingId = null;
+
+        // PWA Installation
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBanner.classList.add('show');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        hideInstallBanner();
+                        showNotification('Aplicația a fost instalată cu succes!', 'success');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        function hideInstallBanner() {
+            installBanner.classList.remove('show');
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Network Status
+        function updateNetworkStatus() {
+            const offlineIndicator = document.getElementById('offlineIndicator');
+            if (navigator.onLine) {
+                offlineIndicator.style.display = 'none';
+            } else {
+                offlineIndicator.style.display = 'block';
+            }
+        }
+
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const content = document.getElementById('notificationContent');
+            
+            content.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Priority Selection
+        document.querySelectorAll('.priority-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const group = this.closest('.priority-group');
+                group.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Filter Tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderReminders();
+            });
+        });
+
+        // Search
+        document.getElementById('searchBox').addEventListener('input', function() {
+            renderReminders();
+        });
+
+        // Add Reminder
+        function addReminder() {
+            const title = document.getElementById('reminderTitle').value.trim();
+            const date = document.getElementById('reminderDate').value;
+            const time = document.getElementById('reminderTime').value;
+            const priority = document.querySelector('.priority-btn.active').dataset.priority;
+
+            if (!title) {
+                showNotification('Vă rugăm să introduceți un titlu pentru reminder', 'error');
+                return;
+            }
+
+            const reminder = {
+                title,
+                date: date || null,
+                time: time || null,
+                priority,
+                completed: false
+            };
+
+            storage.addReminder(reminder);
+            
+            // Clear form
+            document.getElementById('reminderTitle').value = '';
+            document.getElementById('reminderDate').value = '';
+            document.getElementById('reminderTime').value = '';
+            
+            // Reset priority to medium
+            document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.priority-btn[data-priority="medium"]').classList.add('active');
+
+            renderReminders();
+            updateStats();
+            showNotification('Reminder adăugat cu succes!', 'success');
+
+            // Vibrate if supported
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
+        }
+
+        // Toggle Complete
+        function toggleComplete(id) {
+            const reminder = storage.getReminders().find(r => r.id === id);
+            if (reminder) {
+                storage.updateReminder(id, { completed: !reminder.completed });
+                renderReminders();
+                updateStats();
+                
+                const message = reminder.completed ? 'Reminder marcat ca completat!' : 'Reminder marcat ca necompletat!';
+                showNotification(message, 'success');
+            }
+        }
+
+        // Edit Reminder
+        function editReminder(id) {
+            const reminder = storage.getReminders().find(r => r.id === id);
+            if (!reminder) return;
+
+            editingId = id;
+            
+            document.getElementById('editTitle').value = reminder.title;
+            document.getElementById('editDate').value = reminder.date || '';
+            document.getElementById('editTime').value = reminder.time || '';
+            
+            // Set priority
+            const priorityGroup = document.getElementById('editPriorityGroup');
+            priorityGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
+            priorityGroup.querySelector(`[data-priority="${reminder.priority}"]`).classList.add('active');
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function saveEditedReminder() {
+            if (!editingId) return;
+
+            const title = document.getElementById('editTitle').value.trim();
+            const date = document.getElementById('editDate').value;
+            const time = document.getElementById('editTime').value;
+            const priority = document.querySelector('#editPriorityGroup .priority-btn.active').dataset.priority;
+
+            if (!title) {
+                showNotification('Vă rugăm să introduceți un titlu', 'error');
+                return;
+            }
+
+            storage.updateReminder(editingId, {
+                title,
+                date: date || null,
+                time: time || null,
+                priority
+            });
+
+            closeEditModal();
+            renderReminders();
+            updateStats();
+            showNotification('Reminder actualizat cu succes!', 'success');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editingId = null;
+        }
+
+        // Delete Reminder
+        function deleteReminder(id) {
+            if (confirm('Sigur doriți să ștergeți acest reminder?')) {
+                storage.deleteReminder(id);
+                renderReminders();
+                updateStats();
+                showNotification('Reminder șters cu succes!', 'success');
+            }
+        }
+
+        // Clear All
+        function clearAllReminders() {
+            if (confirm('Sigur doriți să ștergeți toate reminder-urile?')) {
+                storage.clear();
+                renderReminders();
+                updateStats();
+                showNotification('Toate reminder-urile au fost șterse!', 'success');
+            }
+        }
+
+        // Render Reminders
+        function renderReminders() {
+            const container = document.getElementById('remindersList');
+            let reminders = storage.getReminders();
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+
+            // Filter by search
+            if (searchTerm) {
+                reminders = reminders.filter(r => 
+                    r.title.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Filter by status
+            if (currentFilter === 'pending') {
+                reminders = reminders.filter(r => !r.completed);
+            } else if (currentFilter === 'completed') {
+                reminders = reminders.filter(r => r.completed);
+            } else if (currentFilter === 'overdue') {
+                const now = new Date();
+                reminders = reminders.filter(r => {
+                    if (r.completed || !r.date) return false;
+                    const reminderDate = new Date(r.date + (r.time ? 'T' + r.time : ''));
+                    return reminderDate < now;
+                });
+            }
+
+            // Sort by date and priority
+            reminders.sort((a, b) => {
+                const priorityOrder = { high: 3, medium: 2, low: 1 };
+                
+                if (a.date && b.date) {
+                    const dateA = new Date(a.date + (a.time ? 'T' + a.time : ''));
+                    const dateB = new Date(b.date + (b.time ? 'T' + b.time : ''));
+                    return dateA - dateB;
+                }
+                
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            });
+
+            if (reminders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⏰</div>
+                        <h3>${searchTerm ? 'Niciun rezultat' : 'Niciun reminder'}</h3>
+                        <p>${searchTerm ? 'Încercați un alt termen de căutare' : 'Adaugă primul tău reminder folosind formularul de mai sus'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = reminders.map(reminder => {
+                const isOverdue = reminder.date && !reminder.completed && 
+                    new Date(reminder.date + (reminder.time ? 'T' + reminder.time : '')) < new Date();
+                
+                const dateDisplay = reminder.date ? 
+                    new Date(reminder.date).toLocaleDateString('ro-RO') : '';
+                
+                const timeDisplay = reminder.time || '';
+
+                return `
+                    <div class="reminder-item ${reminder.completed ? 'completed' : ''} priority-${reminder.priority} ${isOverdue ? 'overdue' : ''}">
+                        <div class="reminder-header">
+                            <div class="reminder-title">${reminder.title}</div>
+                            <div class="reminder-actions">
+                                <button class="action-btn complete" onclick="toggleComplete('${reminder.id}')" title="${reminder.completed ? 'Marchează ca necompletat' : 'Marchează ca completat'}">
+                                    ${reminder.completed ? '↩️' : '✅'}
+                                </button>
+                                <button class="action-btn edit" onclick="editReminder('${reminder.id}')" title="Editează">
+                                    ✏️
+                                </button>
+                                <button class="action-btn delete" onclick="deleteReminder('${reminder.id}')" title="Șterge">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                        <div class="reminder-meta">
+                            ${dateDisplay ? `<div class="reminder-date">📅 ${dateDisplay}</div>` : ''}
+                            ${timeDisplay ? `<div class="reminder-date">🕐 ${timeDisplay}</div>` : ''}
+                            <div class="reminder-priority ${reminder.priority}">
+                                ${reminder.priority === 'high' ? '🔴 Ridicată' : 
+                                  reminder.priority === 'medium' ? '🟡 Medie' : '🟢 Scăzută'}
+                            </div>
+                            ${isOverdue ? '<div class="reminder-date" style="color: var(--danger);">⚠️ Întârziat</div>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Update Stats
+        function updateStats() {
+            const reminders = storage.getReminders();
+            const total = reminders.length;
+            const pending = reminders.filter(r => !r.completed).length;
+            const overdue = reminders.filter(r => {
+                if (r.completed || !r.date) return false;
+                const reminderDate = new Date(r.date + (r.time ? 'T' + r.time : ''));
+                return reminderDate < new Date();
+            }).length;
+
+            document.getElementById('totalReminders').textContent = total;
+            document.getElementById('pendingReminders').textContent = pending;
+            document.getElementById('overdueReminders').textContent = overdue;
+        }
+
+        // Set default date to today
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reminderDate').value = today;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.id === 'reminderTitle') {
+                addReminder();
+            }
+            
+            if (e.key === 'Escape') {
+                closeEditModal();
+            }
+        });
+
+        // Check for overdue reminders
+        function checkOverdueReminders() {
+            const reminders = storage.getReminders();
+            const now = new Date();
+            
+            const overdue = reminders.filter(r => {
+                if (r.completed || !r.date) return false;
+                const reminderDate = new Date(r.date + (r.time ? 'T' + r.time : ''));
+                return reminderDate < now;
+            });
+
+            if (overdue.length > 0) {
+                showNotification(`Ai ${overdue.length} reminder${overdue.length > 1 ? '-uri' : ''} întârziat${overdue.length > 1 ? 'e' : ''}!`, 'warning');
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            setDefaultDate();
+            renderReminders();
+            updateStats();
+            updateNetworkStatus();
+            
+            // Check for overdue reminders after 3 seconds
+            setTimeout(checkOverdueReminders, 3000);
+            
+            // Check periodically
+            setInterval(checkOverdueReminders, 300000); // Every 5 minutes
+        });
+
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    </script>
+
+    <script>
+        // Generate manifest.json dynamically
+        const manifest = {
+            "name": "Reminder PWA",
+            "short_name": "Reminder",
+            "description": "Aplicație PWA pentru gestionarea reminder-urilor și task-urilor",
+            "start_url": "./",
+            "display": "standalone",
+            "orientation": "portrait",
+            "theme_color": "#6C5CE7",
+            "background_color": "#F8F9FE",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%236C5CE7' rx='24'/><text x='96' y='130' font-size='120' text-anchor='middle' fill='white'>⏰</text></svg>",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                },
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%236C5CE7' rx='64'/><text x='256' y='350' font-size='320' text-anchor='middle' fill='white'>⏰</text></svg>",
+                    "sizes": "512x512",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }
+            ],
+            "categories": ["productivity", "utilities"],
+            "lang": "ro"
+        };
+
+        // Create manifest blob and URL
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.querySelector('link[rel="manifest"]').href = manifestURL;
+
+        // Generate service worker dynamically
+        const swCode = `
+const CACHE_NAME = 'reminder-pwa-v1';
+const urlsToCache = [
+    './',
+    './index.html'
+];
+
+self.addEventListener('install', function(event) {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(function(cache) {
+                return cache.addAll(urlsToCache);
+            })
+    );
+});
+
+self.addEventListener('fetch', function(event) {
+    event.respondWith(
+        caches.match(event.request)
+            .then(function(response) {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request);
+            }
+        )
+    );
+});
+        `;
+
+        // Register service worker with blob
+        if ('serviceWorker' in navigator) {
+            const swBlob = new Blob([swCode], {type: 'application/javascript'});
+            const swURL = URL.createObjectURL(swBlob);
+            
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register(swURL)
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
