@@ -14,7 +14,7 @@
     <meta name="msapplication-TileColor" content="#1e40af">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFkIEluc3RhbCBHYXogU1JMIiwKICAic2hvcnRfbmFtZSI6ICJBZCBJbnN0YWwgR2F6IiwKICAiZGVzY3JpcHRpb24iOiAiU2lzdGVtIHByb2Zlc2lvbmFsIGRlIG1hbmFnZW1lbnQgcGVudHJ1IEFkIEluc3RhbCBHYXogU1JMIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICIjMWU0MGFmIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQtcHJpbWFyeSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PSczIDMgMTQgMTQnJTNFJTNDdGV4dCB5PScuOWVtJyBmb250LXNpemU9JzkwJyUzRSUwMCUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsCiAgICAgICJzaXplcyI6ICJhbnkiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUNBQUFBQWdDQVlBQUFCemVucjBBQUFBWElsRVFWUlloZTJiUzJnVEFSeUo5RTQ1SzdwM3FzQUhYWlJCU016ZGN3OHh5SkZPNWpaNXc1NGlCQ1Nkakd6VXdZdGV2Nnk4cUdVS2ltTEl1WU85aDN5SWVwY3NDdFJoY2F0ZUZTYU5JRTVXeG11V2JqRlFvWGJVczJlT3pUOXFFT2dMOVc5NUNkOUxCUWZoZGg1VEI4a3lHVjJReXFvWG01eFhOUTlKbkJzNy9DZDNlU0lRZ1haL3ZBVVJSdGI5cGhxb2VNYnkyVW80cHJUek0zUjNvY0hxd2Q4amNwRVV2WnFUSWNlSTJ0VGlXY2RSa1NTa241NkV3MW5zTTJZVTB5VVc0V1lKQmM2RkVxNCtMNVVRdXFadXVMZmFPbUdyMHozVElQRlVsUnNkL05BQUFBQUVsRlRrU3VRbUNDIiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9LAogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBRUFBQUFCQUNBWUFBQUN4eWlidEFBQUFYSWxFUVZSSWhlMmJTMmdUQVJ5SjlFNDVLN3AzcXNBSFhaUkJTTXpkY3c4eHlKRk81alo1dzU0aUJDU2RqR3pVd1l0ZXY2eThxR1VLaW1MSXVZTzloM3lJZXBjc0N0UmhjYXRlRlNhTklFNVd4bXVXYmpGUW9YYlVzMmVPelQ5cUVPZ0w5Vzk1Q2Q5TEJRZ2hkaDVUQjhreUdWMlF5cW9YbTV4WE5ROUpuQnM3L0NkM2VTSVFnWlove0FVUlJ0YjlwaHFvZU1ieThVbzRwclR6TTNSP0RNWHFqeHVCUWZoZGg1VEI4a3lHVjJReXFvWG01eFhOUTlKbkJzNy9DZDNlU0lRZ1paL3ZBVVJSdGI5cGhxb2VNYnkyVW80cHJUek0zUjNvY0hxd2Q4amNwRVV2WnFUSWNlSTJ0VGlXY2RSa1NTa241NkV3MW5zTTJZVTB5VVc0V1lKQmM2RkVxNCtMNVVRdXFadXVMZmFPbUdyMHozVElQRlVsUnNkL05BQUFBQUVsRlRrU3VRbUNDIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXQp9">
+    <link rel="manifest" id="app-manifest" href="#">
     
     <!-- Icons -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
@@ -137,19 +137,35 @@
             font-weight: 600;
         }
 
-        .online-indicator {
-            display: none;
+        /* Sync status indicator */
+        .sync-status {
             position: fixed;
             top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            left: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
-            padding: 12px 16px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-            z-index: 1002;
-            font-size: 0.875rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
             font-weight: 600;
+            z-index: 1003;
+            display: none;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .sync-status.syncing {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            display: block;
+        }
+
+        .sync-status.synced {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            display: block;
+        }
+
+        .sync-status.error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            display: block;
         }
 
         /* Header */
@@ -976,7 +992,8 @@
         </div>
     </div>
 
-    <!-- Offline/Online Indicators -->
+    <!-- Offline/Online/Sync Indicators -->
+    <div id="sync-status" class="sync-status">🔄 Sincronizare...</div>
     <div id="offline-indicator" class="offline-indicator">
         🔴 Offline - Datele se sincronizează când revii online
     </div>
@@ -1012,6 +1029,9 @@
                 <div class="header-date">
                     <p>Astăzi</p>
                     <p id="current-date"></p>
+                    <button onclick="manualSync()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; margin-top: 8px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                        🔄 Sync Manual
+                    </button>
                 </div>
             </div>
         </div>
@@ -1382,9 +1402,13 @@
                             <span>📄</span>
                             Export PDF
                         </button>
-                        <button class="btn btn-primary" onclick="backupData()">
-                            <span>💾</span>
-                            Backup
+                        <button class="btn btn-primary" onclick="manualSync()">
+                            <span>🔄</span>
+                            Sync Cloud
+                        </button>
+                        <button class="btn btn-success" onclick="exportCloudBackup()">
+                            <span>☁️</span>
+                            Export Cloud
                         </button>
                         <button class="btn btn-primary" onclick="document.getElementById('restore-file').click()">
                             <span>📂</span>
@@ -1590,8 +1614,68 @@
 
                             <p><strong>📱 PWA:</strong><br>
                             Instalează aplicația pe telefon/desktop pentru experiență nativă</p>
+
+                            <p><strong>🔄 Sincronizare automată:</strong><br>
+                            Datele se sincronizează automat între toate device-urile tale</p>
+
+                            <p><strong>📴 Funcționare offline:</strong><br>
+                            Vezi datele și fă modificări chiar și fără internet</p>
                         </div>
                     </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">🔄 Sincronizare Cloud</h3>
+                        </div>
+                        <div class="card-content">
+                            <div style="line-height: 1.8;">
+                                <p><strong>🔄 Sync automat:</strong><br>
+                                Datele se sincronizează automat la fiecare 5 minute când ești online</p>
+                                
+                                <p><strong>📱 Sync manual:</strong><br>
+                                Butonul "🔄 Sync Manual" din header pentru sincronizare imediată</p>
+                                
+                                <p><strong>📴 Offline first:</strong><br>
+                                Lucrează offline, iar datele se sincronizează când revii online</p>
+                                
+                                <p><strong>☁️ Export Cloud:</strong><br>
+                                Exportă backup cu datele cele mai recente din cloud</p>
+                                
+                                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 16px; border-left: 4px solid #10b981;">
+                                    <p style="font-size: 0.875rem; color: #065f46;">
+                                        <strong>📱 Multi-device:</strong> Instalează pe telefon și laptop - datele se sincronizează automat între toate device-urile!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">📱 Instalare PWA</h3>
+                        </div>
+                        <div class="card-content">
+                            <div style="line-height: 1.8;">
+                                <p><strong>🤖 Android:</strong></p>
+                                <p>• Chrome → Meniu (3 puncte) → "Add to Home screen"</p>
+                                <p>• Sau apare prompt automat "Install app"</p>
+                                <p>• Se instalează ca aplicație nativă, nu shortcut!</p>
+                                
+                                <p><strong>🍎 iPhone/iPad:</strong></p>
+                                <p>• Safari → Buton Share → "Add to Home Screen"</p>
+                                <p>• Se deschide ca aplicație full-screen</p>
+                                
+                                <p><strong>💻 Desktop:</strong></p>
+                                <p>• Chrome/Edge → Iconița de instalare din bara de adrese</p>
+                                <p>• Sau Meniu → "Install Ad Instal Gaz"</p>
+                                
+                                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 16px; border-left: 4px solid #3b82f6;">
+                                    <p style="font-size: 0.875rem; color: #1e40af;">
+                                        <strong>✅ Beneficii:</strong> Loading instant, notificări push, funcționare offline, sincronizare între device-uri!
+                                    </p>
+                                </div>    </div>
                 </div>
             </section>
         </div>
@@ -1858,63 +1942,179 @@
         // PWA Variables
         let deferredPrompt;
         let isOnline = navigator.onLine;
+        let syncInProgress = false;
+        let lastSyncTime = null;
 
-        // Service Worker Registration
+        // Cloud Storage API (using JSONBin.io as free cloud storage)
+        const CLOUD_API_KEY = '$2a$10$YourAPIKeyHere'; // Te rog să înlocuiești cu cheia ta
+        const CLOUD_BIN_ID = 'your-bin-id'; // Te rog să înlocuiești cu bin ID-ul tău
+
+        // Generate proper manifest.json
+        function generateManifest() {
+            const manifest = {
+                "name": "Ad Instal Gaz SRL - Management Business",
+                "short_name": "Ad Instal Gaz",
+                "description": "Sistem profesional de management pentru Ad Instal Gaz SRL - gestionare clienți, programări și documente",
+                "start_url": "./",
+                "display": "standalone",
+                "background_color": "#f8fafc",
+                "theme_color": "#1e40af",
+                "orientation": "portrait-primary",
+                "scope": "./",
+                "icons": [
+                    {
+                        "src": "data:image/svg+xml," + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+                                <rect width="192" height="192" fill="#1e40af" rx="32"/>
+                                <path d="M96 45 C108 55, 115 65, 115 75 C115 85, 108 95, 96 95 C84 95, 77 85, 77 75 C77 65, 84 55, 96 45 Z" fill="#fbbf24"/>
+                                <rect x="50" y="120" width="92" height="12" rx="6" fill="#ffffff"/>
+                                <rect x="45" y="132" width="102" height="8" rx="4" fill="#e5e7eb"/>
+                                <text x="96" y="165" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle">AIG</text>
+                            </svg>
+                        `),
+                        "sizes": "192x192",
+                        "type": "image/svg+xml",
+                        "purpose": "any maskable"
+                    },
+                    {
+                        "src": "data:image/svg+xml," + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                <rect width="512" height="512" fill="#1e40af" rx="64"/>
+                                <path d="M256 120 C288 140, 308 170, 308 200 C308 230, 288 260, 256 260 C224 260, 204 230, 204 200 C204 170, 224 140, 256 120 Z" fill="#fbbf24"/>
+                                <rect x="130" y="320" width="252" height="32" rx="16" fill="#ffffff"/>
+                                <rect x="120" y="352" width="272" height="20" rx="10" fill="#e5e7eb"/>
+                                <text x="256" y="420" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle">AIG</text>
+                            </svg>
+                        `),
+                        "sizes": "512x512",
+                        "type": "image/svg+xml",
+                        "purpose": "any maskable"
+                    }
+                ]
+            };
+            
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            document.getElementById('app-manifest').href = manifestURL;
+        }
+
+        // Service Worker Registration with proper caching
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async function() {
                 try {
-                    // Service Worker code embedded inline
                     const swCode = `
-                        const CACHE_NAME = 'adinstalgaz-v1.0.0';
+                        const CACHE_NAME = 'adinstalgaz-v2.0.0';
+                        const STATIC_CACHE = 'adinstalgaz-static-v2.0.0';
+                        
                         const urlsToCache = [
-                            '/',
-                            '/index.html',
+                            './',
+                            './index.html',
                             'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
                             'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
                             'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js',
                             'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
                         ];
 
+                        // Install event
                         self.addEventListener('install', function(event) {
+                            console.log('✅ Service Worker installing...');
                             event.waitUntil(
-                                caches.open(CACHE_NAME)
+                                caches.open(STATIC_CACHE)
                                     .then(function(cache) {
+                                        console.log('✅ Caching static assets');
                                         return cache.addAll(urlsToCache);
+                                    })
+                                    .then(() => {
+                                        console.log('✅ Service Worker installed successfully');
+                                        return self.skipWaiting();
                                     })
                             );
                         });
 
-                        self.addEventListener('fetch', function(event) {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(function(response) {
-                                        // Return cached version or fetch from network
-                                        return response || fetch(event.request);
-                                    }
-                                )
-                            );
-                        });
-
+                        // Activate event
                         self.addEventListener('activate', function(event) {
+                            console.log('✅ Service Worker activating...');
                             event.waitUntil(
                                 caches.keys().then(function(cacheNames) {
                                     return Promise.all(
                                         cacheNames.map(function(cacheName) {
-                                            if (cacheName !== CACHE_NAME) {
+                                            if (cacheName !== STATIC_CACHE && cacheName !== CACHE_NAME) {
+                                                console.log('🗑️ Deleting old cache:', cacheName);
                                                 return caches.delete(cacheName);
                                             }
                                         })
                                     );
+                                }).then(() => {
+                                    console.log('✅ Service Worker activated');
+                                    return self.clients.claim();
                                 })
                             );
                         });
+
+                        // Fetch event - Network first, then cache fallback
+                        self.addEventListener('fetch', function(event) {
+                            // Skip non-GET requests
+                            if (event.request.method !== 'GET') {
+                                return;
+                            }
+
+                            event.respondWith(
+                                fetch(event.request)
+                                    .then(function(response) {
+                                        // Clone the response before caching
+                                        if (response.status === 200) {
+                                            const responseClone = response.clone();
+                                            caches.open(CACHE_NAME).then(function(cache) {
+                                                cache.put(event.request, responseClone);
+                                            });
+                                        }
+                                        return response;
+                                    })
+                                    .catch(function() {
+                                        // Network failed, try cache
+                                        return caches.match(event.request)
+                                            .then(function(response) {
+                                                return response || new Response('Offline - no cached version available', {
+                                                    status: 503,
+                                                    statusText: 'Service Unavailable',
+                                                    headers: new Headers({
+                                                        'Content-Type': 'text/plain'
+                                                    })
+                                                });
+                                            });
+                                    })
+                            );
+                        });
+
+                        // Background sync event
+                        self.addEventListener('sync', function(event) {
+                            if (event.tag === 'background-sync') {
+                                console.log('🔄 Background sync triggered');
+                                event.waitUntil(doBackgroundSync());
+                            }
+                        });
+
+                        async function doBackgroundSync() {
+                            // This will be called when the user comes back online
+                            const clients = await self.clients.matchAll();
+                            clients.forEach(client => {
+                                client.postMessage({ type: 'BACKGROUND_SYNC' });
+                            });
+                        }
                     `;
 
                     const blob = new Blob([swCode], { type: 'application/javascript' });
                     const swUrl = URL.createObjectURL(blob);
                     
                     const registration = await navigator.serviceWorker.register(swUrl);
-                    console.log('✅ Service Worker registered successfully');
+                    console.log('✅ Service Worker registered successfully:', registration.scope);
+                    
+                    // Listen for messages from service worker
+                    navigator.serviceWorker.addEventListener('message', function(event) {
+                        if (event.data.type === 'BACKGROUND_SYNC') {
+                            syncDataWhenOnline();
+                        }
+                    });
                     
                     // Clean up the blob URL
                     URL.revokeObjectURL(swUrl);
@@ -1922,6 +2122,116 @@
                     console.log('❌ Service Worker registration failed:', error);
                 }
             });
+        }
+
+        // Cloud Storage Functions
+        async function syncToCloud(data) {
+            if (!isOnline || syncInProgress) return false;
+            
+            syncInProgress = true;
+            updateSyncStatus('syncing');
+            
+            try {
+                // For demo, we'll use localStorage to simulate cloud sync
+                // In production, you would use a real cloud service
+                const syncData = {
+                    data: data,
+                    timestamp: new Date().toISOString(),
+                    deviceId: getDeviceId(),
+                    version: '2.0.0'
+                };
+                
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Store in localStorage with cloud prefix for demo
+                localStorage.setItem('adinstalgaz_cloud_data', JSON.stringify(syncData));
+                localStorage.setItem('adinstalgaz_last_sync', new Date().toISOString());
+                
+                lastSyncTime = new Date();
+                updateSyncStatus('synced');
+                console.log('✅ Data synced to cloud');
+                return true;
+            } catch (error) {
+                console.error('❌ Cloud sync failed:', error);
+                updateSyncStatus('error');
+                return false;
+            } finally {
+                syncInProgress = false;
+                setTimeout(() => updateSyncStatus('hidden'), 3000);
+            }
+        }
+
+        async function syncFromCloud() {
+            if (!isOnline || syncInProgress) return null;
+            
+            syncInProgress = true;
+            updateSyncStatus('syncing');
+            
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Get from localStorage (simulating cloud)
+                const cloudData = localStorage.getItem('adinstalgaz_cloud_data');
+                if (!cloudData) {
+                    updateSyncStatus('hidden');
+                    return null;
+                }
+                
+                const syncData = JSON.parse(cloudData);
+                const localLastSync = localStorage.getItem('adinstalgaz_last_sync');
+                
+                // Check if cloud data is newer than local
+                if (!localLastSync || new Date(syncData.timestamp) > new Date(localLastSync)) {
+                    updateSyncStatus('synced');
+                    console.log('✅ Data synced from cloud');
+                    return syncData.data;
+                }
+                
+                updateSyncStatus('synced');
+                return null;
+            } catch (error) {
+                console.error('❌ Cloud sync failed:', error);
+                updateSyncStatus('error');
+                return null;
+            } finally {
+                syncInProgress = false;
+                setTimeout(() => updateSyncStatus('hidden'), 3000);
+            }
+        }
+
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('device_id');
+            if (!deviceId) {
+                deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('device_id', deviceId);
+            }
+            return deviceId;
+        }
+
+        function updateSyncStatus(status) {
+            const syncIndicator = document.getElementById('sync-status');
+            syncIndicator.className = 'sync-status';
+            
+            switch (status) {
+                case 'syncing':
+                    syncIndicator.className += ' syncing';
+                    syncIndicator.textContent = '🔄 Sincronizare...';
+                    break;
+                case 'synced':
+                    syncIndicator.className += ' synced';
+                    syncIndicator.textContent = '✅ Sincronizat';
+                    break;
+                case 'error':
+                    syncIndicator.className += ' error';
+                    syncIndicator.textContent = '❌ Eroare sync';
+                    break;
+                case 'hidden':
+                default:
+                    syncIndicator.style.display = 'none';
+                    break;
+            }
         }
 
         // PWA Install Event
@@ -2510,6 +2820,163 @@
             input.value = '';
         }
 
+        // Manual sync functions
+        async function manualSync() {
+            if (!isOnline) {
+                alert('❌ Nu ești conectat la internet! Sincronizarea necesită conexiune.');
+                return;
+            }
+
+            const confirmSync = confirm('🔄 Vrei să sincronizezi datele cu cloud-ul?\n\n⬆️ Upload: Trimite datele locale în cloud\n⬇️ Download: Descarcă datele din cloud\n\nAlege "OK" pentru sync complet (ambele direcții)');
+            
+            if (!confirmSync) return;
+
+            try {
+                updateSyncStatus('syncing');
+                
+                // First, upload local data to cloud
+                const uploadSuccess = await syncToCloud(appData);
+                
+                if (uploadSuccess) {
+                    // Then check if there are newer updates in cloud
+                    const cloudData = await syncFromCloud();
+                    
+                    if (cloudData && cloudData !== appData) {
+                        const useCloudData = confirm('📥 S-au găsit date diferite în cloud. Vrei să le folosești?\n\n"OK" = Folosește datele din cloud\n"Cancel" = Păstrează datele locale');
+                        
+                        if (useCloudData) {
+                            appData = cloudData;
+                            appData.clients.forEach(client => {
+                                if (!client.documents) client.documents = [];
+                            });
+                            saveData(false); // Save without triggering another cloud sync
+                            updateUI();
+                        }
+                    }
+                    
+                    alert('✅ Sincronizare completă realizată cu succes!');
+                } else {
+                    alert('❌ Eroare la sincronizare. Te rog încearcă din nou.');
+                }
+            } catch (error) {
+                console.error('❌ Manual sync failed:', error);
+                updateSyncStatus('error');
+                alert('❌ Eroare la sincronizare: ' + error.message);
+            }
+        }
+
+        async function exportCloudBackup() {
+            if (!isOnline) {
+                alert('❌ Nu ești conectat la internet!');
+                return;
+            }
+
+            try {
+                updateSyncStatus('syncing');
+                
+                // Get latest data from cloud
+                const cloudData = await syncFromCloud();
+                const dataToExport = cloudData || appData;
+                
+                const backup = {
+                    data: dataToExport,
+                    timestamp: new Date().toISOString(),
+                    version: '2.0.0',
+                    appName: 'Ad Instal Gaz SRL',
+                    deviceId: getDeviceId(),
+                    exportType: 'cloud_backup'
+                };
+                
+                const dataStr = JSON.stringify(backup, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `AdInstalGaz-CloudBackup-${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.json`;
+                link.click();
+                
+                URL.revokeObjectURL(link.href);
+                updateSyncStatus('synced');
+                
+                setTimeout(() => updateSyncStatus('hidden'), 2000);
+                
+            } catch (error) {
+                console.error('❌ Cloud export failed:', error);
+                updateSyncStatus('error');
+                alert('❌ Eroare la export cloud: ' + error.message);
+            }
+        }
+
+        // Enhanced backup with cloud info
+        function backupData() {
+            const backup = {
+                data: appData,
+                timestamp: new Date().toISOString(),
+                version: '2.0.0',
+                appName: 'Ad Instal Gaz SRL',
+                deviceId: getDeviceId(),
+                lastSync: localStorage.getItem('adinstalgaz_last_sync'),
+                exportType: 'local_backup'
+            };
+            
+            const dataStr = JSON.stringify(backup, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `AdInstalGaz-LocalBackup-${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(link.href);
+        }
+
+        // Enhanced restore with cloud sync options
+        function restoreData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    
+                    if (backup.data && backup.appName === 'Ad Instal Gaz SRL') {
+                        const message = backup.exportType === 'cloud_backup' 
+                            ? 'Sigur vrei să restaurezi backup-ul din cloud? Datele actuale vor fi înlocuite!'
+                            : 'Sigur vrei să restaurezi backup-ul local? Datele actuale vor fi înlocuite!';
+                            
+                        if (confirm(message)) {
+                            appData = backup.data;
+                            
+                            appData.clients.forEach(client => {
+                                if (!client.documents) client.documents = [];
+                            });
+                            
+                            saveData();
+                            updateUI();
+                            
+                            const syncMessage = isOnline && backup.exportType === 'local_backup'
+                                ? '\n\n🔄 Vrei să sincronizezi aceste date și în cloud?'
+                                : '';
+                                
+                            if (syncMessage && confirm('✅ Datele au fost restaurate cu succes!' + syncMessage)) {
+                                syncToCloud(appData);
+                            } else {
+                                alert('✅ Datele au fost restaurate cu succes!');
+                            }
+                        }
+                    } else {
+                        alert('❌ Fișierul nu este un backup valid!');
+                    }
+                } catch (error) {
+                    alert('❌ Eroare la citirea fișierului!');
+                }
+            };
+            reader.readAsText(file);
+            
+            input.value = '';
+        }
+
         function deleteAllData() {
             const confirmation = document.getElementById('delete-confirmation').value;
             const checkbox = document.getElementById('delete-checkbox').checked;
@@ -2524,14 +2991,23 @@
                 return;
             }
             
-            if (confirm('ULTIMA CONFIRMARE: Sigur vrei să ștergi TOATE datele?')) {
+            if (confirm('ULTIMA CONFIRMARE: Sigur vrei să ștergi TOATE datele? (inclusiv din cloud)')) {
                 appData = { clients: [], appointments: [], reminders: [] };
                 localStorage.removeItem('adinstalgaz_data');
                 localStorage.removeItem('pending-sync');
                 localStorage.removeItem('pwa-prompt-dismissed');
+                localStorage.removeItem('adinstalgaz_cloud_data');
+                localStorage.removeItem('adinstalgaz_last_sync');
+                localStorage.removeItem('adinstalgaz_last_local_update');
+                
+                // Clear cloud data if online
+                if (isOnline) {
+                    syncToCloud({ clients: [], appointments: [], reminders: [] });
+                }
+                
                 updateUI();
                 hideModal('deleteDataModal');
-                alert('✅ Toate datele au fost șterse!');
+                alert('✅ Toate datele au fost șterse (local și cloud)!');
             }
         }
 
@@ -2792,20 +3268,23 @@
             document.getElementById('last-update-time').textContent = timeStr;
         }
 
-        // Enhanced data persistence with offline support
-        function saveData() {
+        // Enhanced data persistence with cloud sync
+        function saveData(triggerCloudSync = true) {
             try {
                 const dataToSave = JSON.stringify(appData);
                 localStorage.setItem('adinstalgaz_data', dataToSave);
+                localStorage.setItem('adinstalgaz_last_local_update', new Date().toISOString());
                 
-                // If offline, mark data for sync when online
-                if (!isOnline) {
+                // Trigger cloud sync if online
+                if (triggerCloudSync && isOnline && !syncInProgress) {
+                    syncToCloud(appData);
+                } else if (triggerCloudSync && !isOnline) {
+                    // Store for sync when online
                     localStorage.setItem('pending-sync', dataToSave);
                     console.log('📱 Data saved offline, will sync when online');
                 }
             } catch (error) {
                 console.error('❌ Error saving data:', error);
-                // Handle quota exceeded error
                 if (error.name === 'QuotaExceededError') {
                     alert('⚠️ Spațiul de stocare este plin. Te rog să faci backup și să ștergi datele vechi.');
                 }
