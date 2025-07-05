@@ -12,13 +12,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Ad Instal Gaz">
     <meta name="msapplication-TileColor" content="#1e40af">
+    <meta name="mobile-web-app-capable" content="yes">
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" id="app-manifest" href="#">
+    <!-- PWA Manifest será generado dinámicamente -->
+    <link rel="manifest" id="manifest-link" href="">
     
     <!-- Icons -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231e40af' rx='20'/><text x='50' y='65' font-size='60' text-anchor='middle' fill='white'>🔥</text></svg>">
+    <link rel="icon" type="image/png" sizes="192x192" id="icon-192">
+    <link rel="apple-touch-icon" sizes="180x180" id="apple-icon">
     
     <!-- Libraries for Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -47,55 +48,60 @@
             padding: 0 24px;
         }
 
-        /* PWA Install Prompt */
-        .pwa-install-prompt {
+        /* PWA Install Banner */
+        .pwa-banner {
             display: none;
             position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
             color: white;
             padding: 16px 20px;
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
             z-index: 1001;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        }
+
+        .pwa-banner.show {
+            display: block;
             animation: slideUp 0.3s ease;
         }
 
         @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
         }
 
-        .pwa-install-content {
+        .pwa-banner-content {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .pwa-install-text {
+        .pwa-banner-text {
             flex: 1;
         }
 
-        .pwa-install-title {
+        .pwa-banner-title {
             font-weight: 700;
             margin-bottom: 4px;
         }
 
-        .pwa-install-subtitle {
+        .pwa-banner-subtitle {
             font-size: 0.875rem;
             color: #bfdbfe;
         }
 
-        .pwa-install-buttons {
+        .pwa-banner-buttons {
             display: flex;
             gap: 12px;
         }
 
         .pwa-btn {
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 8px;
             border: 2px solid rgba(255,255,255,0.3);
             background: rgba(255,255,255,0.1);
@@ -104,6 +110,7 @@
             font-size: 0.875rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .pwa-btn:hover {
@@ -121,27 +128,11 @@
             background: #f8fafc;
         }
 
-        /* Offline indicator */
-        .offline-indicator {
-            display: none;
+        /* Sync indicator */
+        .sync-indicator {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
-            z-index: 1002;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        /* Sync status indicator */
-        .sync-status {
-            position: fixed;
-            top: 20px;
-            left: 20px;
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
             padding: 8px 12px;
@@ -153,19 +144,26 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
-        .sync-status.syncing {
+        .sync-indicator.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .sync-indicator.syncing {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            display: block;
         }
 
-        .sync-status.synced {
+        .sync-indicator.synced {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            display: block;
         }
 
-        .sync-status.error {
+        .sync-indicator.error {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Header */
@@ -239,8 +237,14 @@
             font-weight: 500;
         }
 
-        .header-date {
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
             text-align: right;
+        }
+
+        .header-date {
             background: rgba(255,255,255,0.1);
             padding: 16px 20px;
             border-radius: 12px;
@@ -258,7 +262,27 @@
             font-size: 1.1rem;
         }
 
-        /* Navigation */
+        .sync-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sync-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        /* Rest of your existing CSS... */
         .nav {
             background: linear-gradient(to right, #ffffff, #f8fafc);
             border-bottom: 1px solid #e2e8f0;
@@ -273,20 +297,6 @@
             padding-bottom: 8px;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 #f1f5f9;
-        }
-
-        .nav-container::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .nav-container::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 3px;
-        }
-
-        .nav-container::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
         }
 
         .nav-button {
@@ -345,41 +355,6 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Cards */
-        .card {
-            background: linear-gradient(145deg, #ffffff 0%, #f9fafb 100%);
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .card-header {
-            padding: 24px;
-            border-bottom: 1px solid #f1f5f9;
-            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-        }
-
-        .card-content {
-            padding: 24px;
-        }
-
-        .card-title {
-            font-size: 1.375rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
 
         /* Dashboard */
@@ -443,16 +418,6 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        .stat-card.special {
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            color: white;
-            position: relative;
-        }
-
-        .stat-card.special::before {
-            background: linear-gradient(90deg, #fbbf24, #f59e0b);
-        }
-
         .stat-header {
             display: flex;
             justify-content: space-between;
@@ -472,26 +437,11 @@
             letter-spacing: 0.5px;
         }
 
-        .stat-card.special .stat-label {
-            color: #bfdbfe;
-        }
-
         .stat-value {
             font-size: 2.5rem;
             font-weight: 800;
             color: #1e293b;
             line-height: 1;
-        }
-
-        .stat-card.special .stat-value {
-            color: white;
-        }
-
-        .stat-subtext {
-            font-size: 0.75rem;
-            color: #bfdbfe;
-            margin-top: 8px;
-            font-weight: 500;
         }
 
         .stat-icon {
@@ -500,44 +450,7 @@
             margin-left: 16px;
         }
 
-        /* Forms */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 8px;
-        }
-
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            color: #111827;
-            background: white;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-            transform: translateY(-1px);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Buttons */
+        /* Simple styles for the demo */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -550,23 +463,6 @@
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
         }
 
         .btn-primary {
@@ -586,192 +482,49 @@
             box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.3);
         }
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px 0 rgba(16, 185, 129, 0.4);
+        .card {
+            background: linear-gradient(145deg, #ffffff 0%, #f9fafb 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s ease;
+            overflow: hidden;
         }
 
-        .btn-secondary {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgba(107, 114, 128, 0.3);
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px 0 rgba(107, 114, 128, 0.4);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.3);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px 0 rgba(239, 68, 68, 0.4);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            backdrop-filter: blur(8px);
-        }
-
-        .modal.active {
-            display: flex;
-            animation: modalFadeIn 0.3s ease;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            animation: modalSlideIn 0.3s ease;
-        }
-
-        @keyframes modalSlideIn {
-            from { transform: scale(0.95) translateY(-10px); opacity: 0; }
-            to { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            padding: 24px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-            border-radius: 20px 20px 0 0;
-        }
-
-        .modal-title {
-            font-size: 1.375rem;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: #6b7280;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .modal-close:hover {
-            color: #374151;
-            background: #f3f4f6;
-        }
-
-        .modal-body {
+        .card-content {
             padding: 24px;
         }
 
-        .modal-footer {
-            padding: 24px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            background: #f8fafc;
-            border-radius: 0 0 20px 20px;
+        .feature-highlight {
+            background: linear-gradient(135deg, #fef7cd 0%, #fef3c7 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
         }
 
-        /* Lists */
-        .list-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 20px;
-            border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s ease;
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-        }
-
-        .list-item:hover {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        }
-
-        .avatar {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: #1e40af;
-            font-size: 1.2rem;
-            border: 3px solid white;
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-        }
-
-        .list-content {
-            flex: 1;
-        }
-
-        .list-title {
+        .feature-highlight-title {
             font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 4px;
-            font-size: 1rem;
-        }
-
-        .list-subtitle {
-            font-size: 0.875rem;
-            color: #64748b;
-            line-height: 1.4;
-        }
-
-        .document-category-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #475569;
-            margin-top: 8px;
-        }
-
-        .action-buttons {
+            color: #92400e;
+            margin-bottom: 8px;
             display: flex;
+            align-items: center;
             gap: 8px;
-            flex-direction: column;
         }
 
-        .action-buttons .btn {
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            min-width: 100px;
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
 
         /* Responsive */
@@ -796,209 +549,50 @@
                 grid-template-columns: 1fr;
             }
 
-            .modal-content {
-                margin: 10px;
-                max-width: calc(100vw - 20px);
-            }
-
-            .nav-container {
-                justify-content: flex-start;
-            }
-
-            .nav-button {
-                padding: 12px 20px;
-                font-size: 0.875rem;
-            }
-
-            .action-buttons {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-
-            .action-buttons .btn {
-                min-width: auto;
-                flex: 1;
-            }
-
-            .pwa-install-content {
+            .pwa-banner-content {
                 flex-direction: column;
                 text-align: center;
             }
 
-            .pwa-install-buttons {
+            .pwa-banner-buttons {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
             }
         }
 
         /* Utility Classes */
         .hidden { display: none !important; }
         .text-center { text-align: center; }
-        .text-sm { font-size: 0.875rem; }
-        .text-xs { font-size: 0.75rem; }
-        .font-medium { font-weight: 500; }
-        .font-bold { font-weight: 700; }
         .mb-4 { margin-bottom: 1rem; }
-        .mt-4 { margin-top: 1rem; }
-        .gap-4 { gap: 1rem; }
         .flex { display: flex; }
         .items-center { align-items: center; }
         .justify-between { justify-content: space-between; }
-
-        /* Professional enhancements */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-programat {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            color: #1e40af;
-        }
-
-        .status-in-progres {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            color: #92400e;
-        }
-
-        .status-finalizat {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #065f46;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #64748b;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 16px;
-            border: 2px dashed #cbd5e1;
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        .notification-dot {
-            width: 8px;
-            height: 8px;
-            background: #ef4444;
-            border-radius: 50%;
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            border: 2px solid white;
-        }
-
-        .feature-highlight {
-            background: linear-gradient(135deg, #fef7cd 0%, #fef3c7 100%);
-            border: 1px solid #f59e0b;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
-        }
-
-        .feature-highlight-title {
-            font-weight: 600;
-            color: #92400e;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .category-section {
-            margin-bottom: 24px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-        }
-
-        .category-header {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            padding: 16px 20px;
-            border-bottom: 1px solid #e2e8f0;
-            font-weight: 600;
-            color: #374151;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .category-content {
-            background: white;
-        }
-
-        .document-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s ease;
-        }
-
-        .document-item:hover {
-            background: #f8fafc;
-        }
-
-        .document-item:last-child {
-            border-bottom: none;
-        }
-
-        .document-info {
-            flex: 1;
-        }
-
-        .document-name {
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 4px;
-        }
-
-        .document-meta {
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-
-        .document-notes {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-top: 4px;
-            font-style: italic;
-        }
+        .gap-4 { gap: 1rem; }
     </style>
 </head>
 <body>
-    <!-- PWA Install Prompt -->
-    <div id="pwa-install-prompt" class="pwa-install-prompt">
-        <div class="pwa-install-content">
-            <div class="pwa-install-text">
-                <div class="pwa-install-title">📱 Instalează aplicația</div>
-                <div class="pwa-install-subtitle">Pentru o experiență optimă, instalează aplicația pe device-ul tău</div>
+    <!-- PWA Install Banner -->
+    <div id="pwa-banner" class="pwa-banner">
+        <div class="pwa-banner-content">
+            <div class="pwa-banner-text">
+                <div class="pwa-banner-title">📱 Instalează aplicația</div>
+                <div class="pwa-banner-subtitle">Pentru o experiență optimă și sincronizare între device-uri</div>
             </div>
-            <div class="pwa-install-buttons">
-                <button class="pwa-btn" onclick="hidePWAPrompt()">Nu, mulțumesc</button>
+            <div class="pwa-banner-buttons">
+                <button class="pwa-btn" onclick="dismissPWABanner()">Nu acum</button>
                 <button class="pwa-btn pwa-btn-primary" onclick="installPWA()">Instalează</button>
             </div>
         </div>
     </div>
 
-    <!-- Offline/Online/Sync Indicators -->
-    <div id="sync-status" class="sync-status">🔄 Sincronizare...</div>
-    <div id="offline-indicator" class="offline-indicator">
-        🔴 Offline - Datele se sincronizează când revii online
-    </div>
-    <div id="online-indicator" class="online-indicator">
-        🟢 Online - Sincronizat
+    <!-- Sync Indicator -->
+    <div id="sync-indicator" class="sync-indicator">
+        🔄 Sincronizare...
     </div>
 
     <!-- Header -->
@@ -1026,11 +620,13 @@
                         <p>Sistem Profesional de Management</p>
                     </div>
                 </div>
-                <div class="header-date">
-                    <p>Astăzi</p>
-                    <p id="current-date"></p>
-                    <button onclick="manualSync()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; margin-top: 8px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                        🔄 Sync Manual
+                <div class="header-actions">
+                    <div class="header-date">
+                        <p>Astăzi</p>
+                        <p id="current-date"></p>
+                    </div>
+                    <button class="sync-btn" onclick="syncNow()">
+                        🔄 Sync
                     </button>
                 </div>
             </div>
@@ -1045,29 +641,9 @@
                     <span class="icon">📊</span>
                     Dashboard
                 </button>
-                <button class="nav-button" onclick="showSection('clients')" id="nav-clients">
-                    <span class="icon">👥</span>
-                    Clienți
-                </button>
-                <button class="nav-button" onclick="showSection('appointments')" id="nav-appointments">
-                    <span class="icon">📅</span>
-                    Programări
-                </button>
-                <button class="nav-button" onclick="showSection('workplan')" id="nav-workplan">
-                    <span class="icon">📋</span>
-                    Fișa Mâine
-                </button>
-                <button class="nav-button" onclick="showSection('reminders')" id="nav-reminders">
-                    <span class="icon">🔔</span>
-                    Reminder-e
-                </button>
-                <button class="nav-button" onclick="showSection('reports')" id="nav-reports">
-                    <span class="icon">📄</span>
-                    Rapoarte
-                </button>
                 <button class="nav-button" onclick="showSection('help')" id="nav-help">
                     <span class="icon">❓</span>
-                    Ghid Utilizare
+                    Ghid PWA
                 </button>
             </div>
         </div>
@@ -1079,9 +655,9 @@
             <!-- Dashboard Section -->
             <section id="dashboard" class="section active">
                 <div class="dashboard-header">
-                    <h2 class="dashboard-title">📊 Dashboard</h2>
+                    <h2 class="dashboard-title">📊 PWA Demo</h2>
                     <div class="last-update">
-                        Ultima actualizare: <span id="last-update-time"></span>
+                        Ultima sincronizare: <span id="last-sync-time">Niciodată</span>
                     </div>
                 </div>
 
@@ -1090,363 +666,66 @@
                     <div class="stat-card">
                         <div class="stat-header">
                             <div class="stat-content">
-                                <div class="stat-label">Total Clienți</div>
-                                <div class="stat-value" id="total-clients">0</div>
+                                <div class="stat-label">Instalări PWA</div>
+                                <div class="stat-value" id="install-count">0</div>
                             </div>
-                            <div class="stat-icon">👥</div>
+                            <div class="stat-icon">📱</div>
                         </div>
                     </div>
 
                     <div class="stat-card">
                         <div class="stat-header">
                             <div class="stat-content">
-                                <div class="stat-label">Programări Luna</div>
-                                <div class="stat-value" id="month-appointments">0</div>
+                                <div class="stat-label">Sincronizări</div>
+                                <div class="stat-value" id="sync-count">0</div>
                             </div>
-                            <div class="stat-icon">📅</div>
+                            <div class="stat-icon">🔄</div>
                         </div>
                     </div>
 
                     <div class="stat-card">
                         <div class="stat-header">
                             <div class="stat-content">
-                                <div class="stat-label">În Așteptare</div>
-                                <div class="stat-value" id="pending-appointments">0</div>
+                                <div class="stat-label">Status Device</div>
+                                <div class="stat-value" id="device-status">🟢</div>
                             </div>
-                            <div class="stat-icon">⏳</div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-content">
-                                <div class="stat-label">Venituri Luna</div>
-                                <div class="stat-value" id="month-revenue">0 RON</div>
-                            </div>
-                            <div class="stat-icon">💰</div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card special">
-                        <div class="stat-header">
-                            <div class="stat-content">
-                                <div class="stat-label">Mâine</div>
-                                <div class="stat-value" id="tomorrow-tasks">0</div>
-                                <div class="stat-subtext">activități programate</div>
-                            </div>
-                            <div class="stat-icon">🔔</div>
+                            <div class="stat-icon">📱</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Activity Cards -->
+                <!-- Demo Cards -->
                 <div class="stats-grid">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">📅 Programări Recente</h3>
-                        </div>
                         <div class="card-content">
-                            <div id="recent-appointments">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">📅</div>
-                                    <p>Nu există programări încă</p>
+                            <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">🚀 Test PWA</h3>
+                            <div class="feature-highlight">
+                                <div class="feature-highlight-title">
+                                    <span>📱</span>
+                                    Instalează pentru test
                                 </div>
+                                <p>Această aplicație poate fi instalată ca PWA pentru a testa funcționalitatea.</p>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">👥 Clienți Noi</h3>
-                        </div>
-                        <div class="card-content">
-                            <div id="recent-clients">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">👥</div>
-                                    <p>Nu există clienți încă</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Clients Section -->
-            <section id="clients" class="section">
-                <div class="dashboard-header">
-                    <h2 class="dashboard-title">👥 Clienți (<span id="clients-count">0</span>)</h2>
-                    <button class="btn btn-primary" onclick="showModal('addClientModal')">
-                        <span>➕</span>
-                        Adaugă Client
-                    </button>
-                </div>
-
-                <div class="feature-highlight">
-                    <div class="feature-highlight-title">
-                        <span>💡</span>
-                        Arhivă digitală profesională
-                    </div>
-                    <p>Fiecare client are propria arhivă de documente organizată pe categorii: PV-uri, Fotografii, Documente oficiale, etc.</p>
-                </div>
-
-                <!-- Search -->
-                <div class="card mb-4">
-                    <div class="card-content">
-                        <input type="text" class="form-input" placeholder="🔍 Caută clienți după nume, telefon sau adresă..." 
-                               onkeyup="searchClients(this.value)" id="client-search">
-                    </div>
-                </div>
-
-                <!-- Clients List -->
-                <div class="card">
-                    <div class="card-content">
-                        <div id="clients-list">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">👥</div>
-                                <p>Nu aveți clienți încă</p>
-                                <button class="btn btn-primary" onclick="showModal('addClientModal')" style="margin-top: 16px;">
-                                    ➕ Adaugă primul client
+                            <div class="flex gap-4">
+                                <button class="btn btn-primary" onclick="installPWA()">
+                                    📲 Instalează
+                                </button>
+                                <button class="btn btn-success" onclick="testSync()">
+                                    🔄 Test Sync
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
-
-            <!-- Appointments Section -->
-            <section id="appointments" class="section">
-                <div class="dashboard-header">
-                    <h2 class="dashboard-title">📅 Programări (<span id="appointments-count">0</span>)</h2>
-                    <button class="btn btn-primary" onclick="showModal('addAppointmentModal')">
-                        <span>➕</span>
-                        Programare Nouă
-                    </button>
-                </div>
-
-                <div class="feature-highlight">
-                    <div class="feature-highlight-title">
-                        <span>📱</span>
-                        WhatsApp & SMS automat
-                    </div>
-                    <p>Trimite notificări automate clienților cu un click - mesajele se completează automat cu detaliile programării.</p>
-                </div>
-
-                <!-- Search -->
-                <div class="card mb-4">
-                    <div class="card-content">
-                        <input type="text" class="form-input" placeholder="🔍 Caută programări după client, serviciu sau adresă..." 
-                               onkeyup="searchAppointments(this.value)" id="appointment-search">
-                    </div>
-                </div>
-
-                <!-- Appointments List -->
-                <div class="card">
-                    <div class="card-content">
-                        <div id="appointments-list">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">📅</div>
-                                <p>Nu aveți programări încă</p>
-                                <button class="btn btn-primary" onclick="showModal('addAppointmentModal')" style="margin-top: 16px;">
-                                    ➕ Creează prima programare
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Work Plan Section -->
-            <section id="workplan" class="section">
-                <div class="dashboard-header">
-                    <h2 class="dashboard-title">📋 Fișa de Lucru - Mâine</h2>
-                    <div class="flex gap-4">
-                        <button class="btn btn-success" onclick="exportTomorrowWorkPlan()">
-                            <span>📄</span>
-                            Export PDF
-                        </button>
-                        <button class="btn btn-primary" onclick="sendTomorrowReminders()">
-                            <span>📱</span>
-                            Trimite Reminder-e
-                        </button>
-                    </div>
-                </div>
-
-                <div class="feature-highlight">
-                    <div class="feature-highlight-title">
-                        <span>🎯</span>
-                        Organizare perfectă pentru teren
-                    </div>
-                    <p>Exportă fișa cu toate detaliile pentru mâine: programări, contacte, adrese și reminder-e de trimis.</p>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">📅 Programări Mâine</h3>
-                        </div>
-                        <div class="card-content">
-                            <div id="tomorrow-appointments">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">📅</div>
-                                    <p>Nu aveți programări mâine</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">🔔 Reminder-e de Trimis Mâine</h3>
-                        </div>
                         <div class="card-content">
-                            <div id="tomorrow-reminders">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">🔔</div>
-                                    <p>Nu aveți reminder-e mâine</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">📊 Rezumat Zilei</h3>
-                    </div>
-                    <div class="card-content">
-                        <div class="stats-grid">
-                            <div class="text-center">
-                                <div style="font-size: 2.5rem; font-weight: 800; color: #3b82f6;" id="tomorrow-total-tasks">0</div>
-                                <div style="color: #64748b; font-weight: 600;">Total Activități</div>
-                            </div>
-                            <div class="text-center">
-                                <div style="font-size: 2.5rem; font-weight: 800; color: #10b981;" id="tomorrow-appointments-count">0</div>
-                                <div style="color: #64748b; font-weight: 600;">Programări</div>
-                            </div>
-                            <div class="text-center">
-                                <div style="font-size: 2.5rem; font-weight: 800; color: #f59e0b;" id="tomorrow-reminders-count">0</div>
-                                <div style="color: #64748b; font-weight: 600;">Reminder-e</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Reminders Section -->
-            <section id="reminders" class="section">
-                <div class="dashboard-header">
-                    <h2 class="dashboard-title">🔔 Reminder-e & Notificări</h2>
-                    <div class="flex gap-4">
-                        <button class="btn btn-success" onclick="showModal('addReminderModal')">
-                            <span>➕</span>
-                            Reminder Nou
-                        </button>
-                        <button class="btn btn-primary" onclick="sendTodayReminders()">
-                            <span>📱</span>
-                            Trimite Azi
-                        </button>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">🔔 Reminder-e Active</h3>
-                        </div>
-                        <div class="card-content">
-                            <div id="active-reminders">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">🔔</div>
-                                    <p>Nu există reminder-e active</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">⚡ Reminder-e Automate</h3>
-                        </div>
-                        <div class="card-content">
-                            <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 20px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid #3b82f6;">
-                                <h4 style="color: #1e40af; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                                    🔥 Verificări Instalații Gaz
-                                </h4>
-                                <p style="color: #1e40af; font-size: 0.875rem;">
-                                    Reminder automat pentru verificările periodice ale instalațiilor de gaze
-                                </p>
-                            </div>
-                            <div style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #10b981;">
-                                <h4 style="color: #065f46; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                                    🌡️ Verificări Centrale Termice
-                                </h4>
-                                <p style="color: #065f46; font-size: 0.875rem;">
-                                    Notificare clienți pentru reviziile periodice ale centralelor termice
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Reports Section -->
-            <section id="reports" class="section">
-                <div class="dashboard-header">
-                    <h2 class="dashboard-title">📄 Rapoarte & Statistici</h2>
-                    <div class="flex gap-4">
-                        <button class="btn btn-success" onclick="exportToExcel()">
-                            <span>📊</span>
-                            Export Excel
-                        </button>
-                        <button class="btn btn-success" onclick="exportToPDF()">
-                            <span>📄</span>
-                            Export PDF
-                        </button>
-                        <button class="btn btn-primary" onclick="manualSync()">
-                            <span>🔄</span>
-                            Sync Cloud
-                        </button>
-                        <button class="btn btn-success" onclick="exportCloudBackup()">
-                            <span>☁️</span>
-                            Export Cloud
-                        </button>
-                        <button class="btn btn-primary" onclick="document.getElementById('restore-file').click()">
-                            <span>📂</span>
-                            Restore
-                        </button>
-                        <input type="file" id="restore-file" accept=".json" style="display: none;" onchange="restoreData(this)">
-                        <button class="btn btn-danger" onclick="showModal('deleteDataModal')">
-                            <span>🗑️</span>
-                            Șterge Date Test
-                        </button>
-                    </div>
-                </div>
-
-                <div class="feature-highlight">
-                    <div class="feature-highlight-title">
-                        <span>📊</span>
-                        Export profesional în Excel și PDF
-                    </div>
-                    <p>Generează rapoarte complete cu 4 foi Excel sau PDF-uri formatate profesional cu toate statisticile.</p>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">📊 Raport Lunar</h3>
-                    </div>
-                    <div class="card-content">
-                        <div class="stats-grid">
-                            <div class="text-center">
-                                <div style="font-size: 2.5rem; font-weight: 800; color: #3b82f6;" id="report-appointments">0</div>
-                                <div style="color: #64748b; font-weight: 600;">Servicii Luna Aceasta</div>
-                            </div>
-                            <div class="text-center">
-                                <div style="font-size: 2.5rem; font-weight: 800; color: #10b981;" id="report-completed">0</div>
-                                <div style="color: #64748b; font-weight: 600;">Servicii Finalizate</div>
-                            </div>
-                            <div class="text-center">
-                                <div style="font-size: 2.5rem; font-weight: 800; color: #10b981;" id="report-revenue">0 RON</div>
-                                <div style="color: #64748b; font-weight: 600;">Venituri Luna</div>
+                            <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">📊 Statistici PWA</h3>
+                            <div style="line-height: 1.8;">
+                                <p><strong>Browser:</strong> <span id="browser-info">Detectare...</span></p>
+                                <p><strong>PWA Support:</strong> <span id="pwa-support">Verificare...</span></p>
+                                <p><strong>Installed:</strong> <span id="install-status">Nu</span></p>
+                                <p><strong>Service Worker:</strong> <span id="sw-status">Încărcare...</span></p>
+                                <p><strong>Sync Status:</strong> <span id="sync-status-text">Inactiv</span></p>
                             </div>
                         </div>
                     </div>
@@ -1456,1715 +735,297 @@
             <!-- Help Section -->
             <section id="help" class="section">
                 <div class="dashboard-header">
-                    <h2 class="dashboard-title">📖 Ghid de Utilizare</h2>
-                    <button class="btn btn-primary" onclick="exportHelpToPDF()">
-                        <span>📄</span>
-                        Export Ghid PDF
-                    </button>
+                    <h2 class="dashboard-title">📖 Ghid PWA</h2>
                 </div>
 
                 <div class="stats-grid">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">🚀 Primii Pași</h3>
-                        </div>
                         <div class="card-content">
-                            <div style="line-height: 1.8; font-size: 0.95rem;">
-                                <p><strong>1. Adaugă primul client:</strong><br>
-                                📱 Clienți → ➕ Adaugă Client → Completează datele</p>
-                                
-                                <p><strong>2. Creează prima programare:</strong><br>
-                                📅 Programări → ➕ Programare Nouă → Selectează clientul</p>
-                                
-                                <p><strong>3. Arhivează documente:</strong><br>
-                                👥 Clienți → 📎 Upload → Selectează tipul documentului</p>
-                                
-                                <p><strong>4. Verifică fișa de mâine:</strong><br>
-                                📋 Fișa Mâine → Export PDF pentru teren</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">📁 Sistemul de Arhivare</h3>
-                        </div>
-                        <div class="card-content">
-                            <div class="category-section">
-                                <div class="category-header">
-                                    📋 PV-uri și Certificări
-                                </div>
-                                <div class="category-content">
-                                    <div style="padding: 16px;">
-                                        • PV Verificare Tehnică<br>
-                                        • Certificat Instalație<br>
-                                        • Proces Verbal Revizie
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="category-section">
-                                <div class="category-header">
-                                    📄 Documente Oficiale
-                                </div>
-                                <div class="category-content">
-                                    <div style="padding: 16px;">
-                                        • Facturi<br>
-                                        • Contracte<br>
-                                        • Autorizații
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="category-section">
-                                <div class="category-header">
-                                    📷 Fotografii
-                                </div>
-                                <div class="category-content">
-                                    <div style="padding: 16px;">
-                                        • Poze instalație<br>
-                                        • Poze defecte<br>
-                                        • Poze finalizare
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="category-section">
-                                <div class="category-header">
-                                    🔧 Documente Tehnice
-                                </div>
-                                <div class="category-content">
-                                    <div style="padding: 16px;">
-                                        • Scheme instalații<br>
-                                        • Rapoarte tehnice<br>
-                                        • Teste și măsurători
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">📱 WhatsApp & SMS</h3>
-                        </div>
-                        <div class="card-content">
+                            <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">📱 Ce este o PWA?</h3>
                             <div style="line-height: 1.8;">
-                                <p><strong>Trimitere automată:</strong></p>
-                                <p>• <strong>Programări:</strong> Fiecare programare are butoane 📱 și 💬</p>
-                                <p>• <strong>Reminder-e:</strong> Buton "Trimite Azi" sau "Trimite Mâine"</p>
-                                <p>• <strong>Mesaje automate:</strong> Se completează cu detaliile programării</p>
-                                
-                                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 16px; border-left: 4px solid #3b82f6;">
-                                    <p style="font-size: 0.875rem; color: #475569;">
-                                        <strong>Exemplu:</strong> "Bună ziua Ion Popescu! Vă reamintim despre programarea pentru Verificare Tehnică Periodică pe data de 06.07.2025 la ora 10:00."
-                                    </p>
-                                </div>
+                                <p><strong>Progressive Web App (PWA)</strong> este o aplicație web care oferă o experiență similară cu aplicațiile native:</p>
+                                <ul style="margin: 16px 0; padding-left: 20px;">
+                                    <li>📲 <strong>Instalabilă</strong> - Se instalează pe device ca o aplicație</li>
+                                    <li>⚡ <strong>Rapidă</strong> - Loading instant datorită cache-ului</li>
+                                    <li>📴 <strong>Offline</strong> - Funcționează fără internet</li>
+                                    <li>🔄 <strong>Sync</strong> - Sincronizare automată când revii online</li>
+                                    <li>📱 <strong>Nativă</strong> - Arată și se simte ca o aplicație instalată</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
 
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">📊 Rapoarte & Export</h3>
-                        </div>
                         <div class="card-content">
+                            <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">🔧 Cum să instalezi PWA</h3>
                             <div style="line-height: 1.8;">
-                                <p><strong>📊 Export Excel:</strong><br>
-                                Conține 4 foi: Clienți, Programări, Reminder-uri, Statistici</p>
-                                
-                                <p><strong>📄 Export PDF:</strong><br>
-                                Raport complet cu statistici și programări</p>
-                                
-                                <p><strong>📋 Fișa de Lucru:</strong><br>
-                                PDF cu toate activitățile de mâine pentru teren</p>
-                                
-                                <p><strong>💾 Backup:</strong><br>
-                                Salvează toate datele într-un fișier JSON sigur</p>
-                                
-                                <p><strong>📂 Restore:</strong><br>
-                                Restaurează datele dintr-un backup anterior</p>
+                                <p><strong>🤖 Android (Chrome):</strong></p>
+                                <ol style="margin: 8px 0 16px 20px;">
+                                    <li>Apare banner automat "Add to Home screen"</li>
+                                    <li>Sau: Meniu (3 puncte) → "Install app"</li>
+                                    <li>Se instalează ca aplicație, NU ca shortcut</li>
+                                </ol>
+
+                                <p><strong>🍎 iPhone/iPad (Safari):</strong></p>
+                                <ol style="margin: 8px 0 16px 20px;">
+                                    <li>Safari → Buton Share (pătrat cu săgeată)</li>
+                                    <li>"Add to Home Screen"</li>
+                                    <li>Se deschide full-screen fără bara Safari</li>
+                                </ol>
+
+                                <p><strong>💻 Desktop (Chrome/Edge):</strong></p>
+                                <ol style="margin: 8px 0 16px 20px;">
+                                    <li>Iconița de instalare în bara de adrese</li>
+                                    <li>Sau: Meniu → "Install Ad Instal Gaz"</li>
+                                    <li>Se deschide în fereastră separată</li>
+                                </ol>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">⚡ Funcții Avansate</h3>
-                    </div>
                     <div class="card-content">
+                        <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">🔄 Sincronizare între device-uri</h3>
                         <div style="line-height: 1.8;">
-                            <p><strong>🔍 Căutare rapidă:</strong><br>
-                            Folosește bara de căutare pentru clienți sau programări</p>
-                            
-                            <p><strong>👁️ Detalii client:</strong><br>
-                            Click pe "👁️" pentru istoric complet client + documente</p>
-                            
-                            <p><strong>📎 Upload múltiple:</strong><br>
-                            Poți uploada multiple documente pentru același client</p>
-                            
-                            <p><strong>🎯 Statusuri programări:</strong><br>
-                            Programat → În Progres → Finalizat (cu butoane rapide)</p>
-                            
-                            <p><strong>🔄 Auto-completare:</strong><br>
-                            Selectează client existent → se completează automat telefon/adresă</p>
+                            <p><strong>Pentru sincronizare reală între device-uri, ai nevoie de:</strong></p>
+                            <ul style="margin: 16px 0; padding-left: 20px;">
+                                <li>🌐 <strong>Cloud Storage API</strong> - Firebase, Supabase, sau backend custom</li>
+                                <li>🔐 <strong>Autentificare</strong> - Pentru a asocia datele cu utilizatorul</li>
+                                <li>📡 <strong>Background Sync</strong> - Sincronizare automată când revii online</li>
+                                <li>⚡ <strong>Real-time updates</strong> - WebSockets pentru sincronizare instantanee</li>
+                            </ul>
 
-                            <p><strong>📱 PWA:</strong><br>
-                            Instalează aplicația pe telefon/desktop pentru experiență nativă</p>
-
-                            <p><strong>🔄 Sincronizare automată:</strong><br>
-                            Datele se sincronizează automat între toate device-urile tale</p>
-
-                            <p><strong>📴 Funcționare offline:</strong><br>
-                            Vezi datele și fă modificări chiar și fără internet</p>
+                            <div class="feature-highlight">
+                                <div class="feature-highlight-title">
+                                    <span>💡</span>
+                                    Pentru implementare completă
+                                </div>
+                                <p>Contactează dezvoltatorul pentru implementarea unui sistem real de sincronizare cu backend și autentificare.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">🔄 Sincronizare Cloud</h3>
-                        </div>
-                        <div class="card-content">
-                            <div style="line-height: 1.8;">
-                                <p><strong>🔄 Sync automat:</strong><br>
-                                Datele se sincronizează automat la fiecare 5 minute când ești online</p>
-                                
-                                <p><strong>📱 Sync manual:</strong><br>
-                                Butonul "🔄 Sync Manual" din header pentru sincronizare imediată</p>
-                                
-                                <p><strong>📴 Offline first:</strong><br>
-                                Lucrează offline, iar datele se sincronizează când revii online</p>
-                                
-                                <p><strong>☁️ Export Cloud:</strong><br>
-                                Exportă backup cu datele cele mai recente din cloud</p>
-                                
-                                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 16px; border-left: 4px solid #10b981;">
-                                    <p style="font-size: 0.875rem; color: #065f46;">
-                                        <strong>📱 Multi-device:</strong> Instalează pe telefon și laptop - datele se sincronizează automat între toate device-urile!
-                                    </p>
-                                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">🎯 Next Steps pentru Ad Instal Gaz</h3>
+                        <div style="line-height: 1.8;">
+                            <p><strong>Pentru o aplicație PWA completă ai nevoie de:</strong></p>
+                            <ol style="margin: 16px 0; padding-left: 20px;">
+                                <li>🏗️ <strong>Backend API</strong> - Server pentru stocarea datelor</li>
+                                <li>🔐 <strong>Sistem de login</strong> - Autentificare utilizatori</li>
+                                <li>☁️ <strong>Cloud storage</strong> - Bază de date în cloud</li>
+                                <li>🔄 <strong>Real-time sync</strong> - Sincronizare instantanee</li>
+                                <li>📱 <strong>Push notifications</strong> - Notificări pentru reminder-e</li>
+                                <li>🔒 <strong>Backup automat</strong> - Siguranța datelor</li>
+                            </ol>
+
+                            <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 16px; border-left: 4px solid #3b82f6;">
+                                <p style="font-size: 0.875rem; color: #1e40af;">
+                                    <strong>💼 Varianta business:</strong> Implementez sistem complet cu hosting, backend, sincronizare reală între device-uri și toate funcționalitățile necesare pentru Ad Instal Gaz SRL.
+                                </p>
                             </div>
                         </div>
                     </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">📱 Instalare PWA</h3>
-                        </div>
-                        <div class="card-content">
-                            <div style="line-height: 1.8;">
-                                <p><strong>🤖 Android:</strong></p>
-                                <p>• Chrome → Meniu (3 puncte) → "Add to Home screen"</p>
-                                <p>• Sau apare prompt automat "Install app"</p>
-                                <p>• Se instalează ca aplicație nativă, nu shortcut!</p>
-                                
-                                <p><strong>🍎 iPhone/iPad:</strong></p>
-                                <p>• Safari → Buton Share → "Add to Home Screen"</p>
-                                <p>• Se deschide ca aplicație full-screen</p>
-                                
-                                <p><strong>💻 Desktop:</strong></p>
-                                <p>• Chrome/Edge → Iconița de instalare din bara de adrese</p>
-                                <p>• Sau Meniu → "Install Ad Instal Gaz"</p>
-                                
-                                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 16px; border-left: 4px solid #3b82f6;">
-                                    <p style="font-size: 0.875rem; color: #1e40af;">
-                                        <strong>✅ Beneficii:</strong> Loading instant, notificări push, funcționare offline, sincronizare între device-uri!
-                                    </p>
-                                </div>    </div>
                 </div>
             </section>
         </div>
     </main>
 
-    <!-- Add Client Modal -->
-    <div id="addClientModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">➕ Adaugă Client Nou</h3>
-                <button class="modal-close" onclick="hideModal('addClientModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Nume Complet *</label>
-                    <input type="text" class="form-input" id="client-name" required placeholder="Ex: Ion Popescu">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Telefon *</label>
-                    <input type="tel" class="form-input" id="client-phone" required placeholder="Ex: 0722 123 456">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="client-email" placeholder="Ex: ion.popescu@email.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Adresa *</label>
-                    <textarea class="form-input form-textarea" id="client-address" required placeholder="Ex: Str. Florilor nr. 15, București, Sector 3"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="hideModal('addClientModal')">Anulează</button>
-                <button class="btn btn-primary" onclick="addClient()">💾 Salvează</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Appointment Modal -->
-    <div id="addAppointmentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">📅 Programare Nouă</h3>
-                <button class="modal-close" onclick="hideModal('addAppointmentModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Client *</label>
-                    <select class="form-select" id="appointment-client-select" onchange="selectClient()" required>
-                        <option value="">Selectează clientul</option>
-                        <option value="new-client">+ Client Nou (introdu manual)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="manual-client-group" style="display: none;">
-                    <label class="form-label">Nume Client *</label>
-                    <input type="text" class="form-input" id="appointment-client-name" placeholder="Nume client nou">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Telefon *</label>
-                    <input type="tel" class="form-input" id="appointment-phone" required placeholder="0722 123 456">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Serviciu *</label>
-                    <select class="form-select" id="appointment-service" required>
-                        <option value="">Selectează serviciul</option>
-                        <option value="Verificări instalații gaz">🔥 Verificări instalații gaz</option>
-                        <option value="Revizii instalații gaz">🔧 Revizii instalații gaz</option>
-                        <option value="Verificări centrale termice">🌡️ Verificări centrale termice</option>
-                        <option value="Revizii centrale termice">⚙️ Revizii centrale termice</option>
-                        <option value="Verificare Tehnică Periodică">📋 Verificare Tehnică Periodică</option>
-                        <option value="Verificare la Racordare">🔌 Verificare la Racordare</option>
-                        <option value="Instalații de Utilizare Gaz">🏠 Instalații de Utilizare Gaz</option>
-                        <option value="Proiectare Branșamente">📐 Proiectare Branșamente</option>
-                        <option value="Execuție Branșamente">🏗️ Execuție Branșamente</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Adresa *</label>
-                    <input type="text" class="form-input" id="appointment-address" required placeholder="Adresa completă">
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div class="form-group">
-                        <label class="form-label">Data *</label>
-                        <input type="date" class="form-input" id="appointment-date" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ora *</label>
-                        <input type="time" class="form-input" id="appointment-time" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Preț (RON)</label>
-                    <input type="number" class="form-input" id="appointment-price" placeholder="Ex: 150">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Observații</label>
-                    <textarea class="form-input form-textarea" id="appointment-notes" placeholder="Detalii suplimentare despre programare..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="hideModal('addAppointmentModal')">Anulează</button>
-                <button class="btn btn-primary" onclick="addAppointment()">📅 Salvează</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Reminder Modal -->
-    <div id="addReminderModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">🔔 Reminder Nou</h3>
-                <button class="modal-close" onclick="hideModal('addReminderModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Client *</label>
-                    <select class="form-select" id="reminder-client-select" onchange="selectReminderClient()" required>
-                        <option value="">Selectează clientul</option>
-                        <option value="new-client">+ Client Nou (introdu manual)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="manual-reminder-client-group" style="display: none;">
-                    <label class="form-label">Nume Client *</label>
-                    <input type="text" class="form-input" id="reminder-client-name" placeholder="Nume client nou">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Telefon Client *</label>
-                    <input type="tel" class="form-input" id="reminder-phone" required placeholder="0722 123 456">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Tipul Reminder-ului *</label>
-                    <select class="form-select" id="reminder-type" onchange="updateReminderMessage()" required>
-                        <option value="">Selectează tipul</option>
-                        <option value="verificare-instalatii-gaz">🔥 Verificări și Revizii Instalații Gaz</option>
-                        <option value="verificare-centrale-termice">🌡️ Verificări și Revizii Centrale Termice</option>
-                        <option value="urmărire-factura">💰 Urmărire Factură</option>
-                        <option value="custom">📝 Personalizat</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Data Reminder *</label>
-                    <input type="date" class="form-input" id="reminder-date" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Mesajul pentru Client</label>
-                    <textarea class="form-input form-textarea" id="reminder-message" rows="4" placeholder="Mesajul se va completa automat în funcție de tipul selectat..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="hideModal('addReminderModal')">Anulează</button>
-                <button class="btn btn-success" onclick="addReminder()">🔔 Salvează</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Document Upload Modal -->
-    <div id="documentUploadModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">📎 Upload Document</h3>
-                <button class="modal-close" onclick="hideModal('documentUploadModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Categoria Document *</label>
-                    <select class="form-select" id="document-category" required>
-                        <option value="">Selectează categoria</option>
-                        <option value="PV-uri">📋 PV-uri și Certificări</option>
-                        <option value="Documente">📄 Documente Oficiale</option>
-                        <option value="Fotografii">📷 Fotografii</option>
-                        <option value="Tehnice">🔧 Documente Tehnice</option>
-                        <option value="Altele">📁 Altele</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Subcategoria</label>
-                    <select class="form-select" id="document-subcategory">
-                        <option value="">Selectează subcategoria</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Descriere Document</label>
-                    <input type="text" class="form-input" id="document-description" placeholder="Ex: PV Verificare Tehnică din 06.07.2025">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Fișier *</label>
-                    <input type="file" class="form-input" id="document-file" accept="image/*,.pdf,.doc,.docx" required>
-                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 8px; padding: 12px; background: #f8fafc; border-radius: 8px;">
-                        📁 Formate acceptate: JPG, PNG, PDF, DOC, DOCX (max 10MB)
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Notițe Adiționale</label>
-                    <textarea class="form-input form-textarea" id="document-notes" rows="3" placeholder="Notițe despre document..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="hideModal('documentUploadModal')">Anulează</button>
-                <button class="btn btn-primary" onclick="uploadDocument()">📎 Upload</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Client Details Modal -->
-    <div id="clientDetailsModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3 class="modal-title">👤 Fișa Completă Client</h3>
-                <button class="modal-close" onclick="hideModal('clientDetailsModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="client-details-content">
-                    <!-- Content will be populated dynamically -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="hideModal('clientDetailsModal')">Închide</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Data Modal -->
-    <div id="deleteDataModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" style="color: #dc2626;">⚠️ Ștergere Date Test</h3>
-                <button class="modal-close" onclick="hideModal('deleteDataModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 1px solid #fecaca; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <p style="color: #dc2626; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                        🚨 ATENȚIE!
-                    </p>
-                    <p style="color: #dc2626; font-size: 0.875rem;">
-                        Această acțiune va șterge TOATE datele (clienți, programări, reminder-uri) și nu poate fi anulată!
-                    </p>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Pentru confirmare, scrie: <strong>STERGE TOTUL</strong></label>
-                    <input type="text" class="form-input" id="delete-confirmation" placeholder="Scrie exact: STERGE TOTUL">
-                </div>
-                
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 12px; font-size: 0.875rem; cursor: pointer;">
-                        <input type="checkbox" id="delete-checkbox" style="width: 20px; height: 20px;">
-                        Confirm că vreau să șterg toate datele
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="hideModal('deleteDataModal')">Anulează</button>
-                <button class="btn btn-danger" onclick="deleteAllData()">
-                    🗑️ Șterge Totul
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // PWA Variables
         let deferredPrompt;
         let isOnline = navigator.onLine;
-        let syncInProgress = false;
-        let lastSyncTime = null;
+        let pwaData = {
+            installCount: 0,
+            syncCount: 0,
+            lastSync: null
+        };
 
-        // Cloud Storage API (using JSONBin.io as free cloud storage)
-        const CLOUD_API_KEY = '$2a$10$YourAPIKeyHere'; // Te rog să înlocuiești cu cheia ta
-        const CLOUD_BIN_ID = 'your-bin-id'; // Te rog să înlocuiești cu bin ID-ul tău
+        // Load saved data
+        function loadPWAData() {
+            const saved = localStorage.getItem('pwa_demo_data');
+            if (saved) {
+                pwaData = { ...pwaData, ...JSON.parse(saved) };
+            }
+        }
 
-        // Generate proper manifest.json
+        // Save data
+        function savePWAData() {
+            localStorage.setItem('pwa_demo_data', JSON.stringify(pwaData));
+        }
+
+        // Generate proper PWA icons
+        function generateIcons() {
+            const canvas192 = document.createElement('canvas');
+            canvas192.width = 192;
+            canvas192.height = 192;
+            const ctx192 = canvas192.getContext('2d');
+            
+            // Background
+            const gradient = ctx192.createLinearGradient(0, 0, 192, 192);
+            gradient.addColorStop(0, '#1e40af');
+            gradient.addColorStop(1, '#3b82f6');
+            ctx192.fillStyle = gradient;
+            ctx192.fillRect(0, 0, 192, 192);
+            
+            // Icon
+            ctx192.fillStyle = '#fbbf24';
+            ctx192.font = 'bold 120px Arial';
+            ctx192.textAlign = 'center';
+            ctx192.textBaseline = 'middle';
+            ctx192.fillText('🔥', 96, 96);
+            
+            // Text
+            ctx192.fillStyle = 'white';
+            ctx192.font = 'bold 24px Arial';
+            ctx192.fillText('AIG', 96, 150);
+            
+            const icon192 = canvas192.toDataURL();
+            document.getElementById('icon-192').href = icon192;
+            document.getElementById('apple-icon').href = icon192;
+            
+            return icon192;
+        }
+
+        // Generate PWA manifest
         function generateManifest() {
+            const icon192 = generateIcons();
+            
             const manifest = {
-                "name": "Ad Instal Gaz SRL - Management Business",
-                "short_name": "Ad Instal Gaz",
-                "description": "Sistem profesional de management pentru Ad Instal Gaz SRL - gestionare clienți, programări și documente",
-                "start_url": "./",
-                "display": "standalone",
-                "background_color": "#f8fafc",
-                "theme_color": "#1e40af",
-                "orientation": "portrait-primary",
-                "scope": "./",
-                "icons": [
+                name: "Ad Instal Gaz SRL - PWA Demo",
+                short_name: "Ad Instal Gaz",
+                description: "Demo PWA pentru Ad Instal Gaz SRL",
+                start_url: "./",
+                display: "standalone",
+                background_color: "#f8fafc",
+                theme_color: "#1e40af",
+                orientation: "portrait-primary",
+                scope: "./",
+                categories: ["business", "productivity"],
+                icons: [
                     {
-                        "src": "data:image/svg+xml," + encodeURIComponent(`
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-                                <rect width="192" height="192" fill="#1e40af" rx="32"/>
-                                <path d="M96 45 C108 55, 115 65, 115 75 C115 85, 108 95, 96 95 C84 95, 77 85, 77 75 C77 65, 84 55, 96 45 Z" fill="#fbbf24"/>
-                                <rect x="50" y="120" width="92" height="12" rx="6" fill="#ffffff"/>
-                                <rect x="45" y="132" width="102" height="8" rx="4" fill="#e5e7eb"/>
-                                <text x="96" y="165" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle">AIG</text>
-                            </svg>
-                        `),
-                        "sizes": "192x192",
-                        "type": "image/svg+xml",
-                        "purpose": "any maskable"
+                        src: icon192,
+                        sizes: "192x192",
+                        type: "image/png",
+                        purpose: "any maskable"
                     },
                     {
-                        "src": "data:image/svg+xml," + encodeURIComponent(`
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                                <rect width="512" height="512" fill="#1e40af" rx="64"/>
-                                <path d="M256 120 C288 140, 308 170, 308 200 C308 230, 288 260, 256 260 C224 260, 204 230, 204 200 C204 170, 224 140, 256 120 Z" fill="#fbbf24"/>
-                                <rect x="130" y="320" width="252" height="32" rx="16" fill="#ffffff"/>
-                                <rect x="120" y="352" width="272" height="20" rx="10" fill="#e5e7eb"/>
-                                <text x="256" y="420" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle">AIG</text>
-                            </svg>
-                        `),
-                        "sizes": "512x512",
-                        "type": "image/svg+xml",
-                        "purpose": "any maskable"
+                        src: icon192,
+                        sizes: "512x512", 
+                        type: "image/png",
+                        purpose: "any maskable"
                     }
                 ]
             };
             
             const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
             const manifestURL = URL.createObjectURL(manifestBlob);
-            document.getElementById('app-manifest').href = manifestURL;
+            document.getElementById('manifest-link').href = manifestURL;
+            
+            console.log('✅ PWA Manifest generated');
         }
 
-        // Service Worker Registration with proper caching
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', async function() {
+        // Service Worker registration
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
                 try {
                     const swCode = `
-                        const CACHE_NAME = 'adinstalgaz-v2.0.0';
-                        const STATIC_CACHE = 'adinstalgaz-static-v2.0.0';
-                        
+                        const CACHE_NAME = 'adinstalgaz-pwa-v1.0.0';
                         const urlsToCache = [
                             './',
-                            './index.html',
                             'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
                             'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
                             'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js',
                             'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
                         ];
 
-                        // Install event
                         self.addEventListener('install', function(event) {
-                            console.log('✅ Service Worker installing...');
+                            console.log('Service Worker installing...');
                             event.waitUntil(
-                                caches.open(STATIC_CACHE)
+                                caches.open(CACHE_NAME)
                                     .then(function(cache) {
-                                        console.log('✅ Caching static assets');
+                                        console.log('Caching files');
                                         return cache.addAll(urlsToCache);
                                     })
-                                    .then(() => {
-                                        console.log('✅ Service Worker installed successfully');
-                                        return self.skipWaiting();
-                                    })
+                                    .then(() => self.skipWaiting())
                             );
                         });
 
-                        // Activate event
                         self.addEventListener('activate', function(event) {
-                            console.log('✅ Service Worker activating...');
+                            console.log('Service Worker activating...');
                             event.waitUntil(
                                 caches.keys().then(function(cacheNames) {
                                     return Promise.all(
                                         cacheNames.map(function(cacheName) {
-                                            if (cacheName !== STATIC_CACHE && cacheName !== CACHE_NAME) {
-                                                console.log('🗑️ Deleting old cache:', cacheName);
+                                            if (cacheName !== CACHE_NAME) {
                                                 return caches.delete(cacheName);
                                             }
                                         })
                                     );
-                                }).then(() => {
-                                    console.log('✅ Service Worker activated');
-                                    return self.clients.claim();
-                                })
+                                }).then(() => self.clients.claim())
                             );
                         });
 
-                        // Fetch event - Network first, then cache fallback
                         self.addEventListener('fetch', function(event) {
-                            // Skip non-GET requests
-                            if (event.request.method !== 'GET') {
-                                return;
-                            }
-
                             event.respondWith(
-                                fetch(event.request)
+                                caches.match(event.request)
                                     .then(function(response) {
-                                        // Clone the response before caching
-                                        if (response.status === 200) {
-                                            const responseClone = response.clone();
-                                            caches.open(CACHE_NAME).then(function(cache) {
-                                                cache.put(event.request, responseClone);
-                                            });
+                                        if (response) {
+                                            return response;
                                         }
-                                        return response;
-                                    })
-                                    .catch(function() {
-                                        // Network failed, try cache
-                                        return caches.match(event.request)
-                                            .then(function(response) {
-                                                return response || new Response('Offline - no cached version available', {
-                                                    status: 503,
-                                                    statusText: 'Service Unavailable',
-                                                    headers: new Headers({
-                                                        'Content-Type': 'text/plain'
-                                                    })
-                                                });
-                                            });
-                                    })
+                                        return fetch(event.request);
+                                    }
+                                )
                             );
                         });
 
-                        // Background sync event
                         self.addEventListener('sync', function(event) {
                             if (event.tag === 'background-sync') {
-                                console.log('🔄 Background sync triggered');
-                                event.waitUntil(doBackgroundSync());
+                                console.log('Background sync triggered');
                             }
                         });
-
-                        async function doBackgroundSync() {
-                            // This will be called when the user comes back online
-                            const clients = await self.clients.matchAll();
-                            clients.forEach(client => {
-                                client.postMessage({ type: 'BACKGROUND_SYNC' });
-                            });
-                        }
                     `;
 
                     const blob = new Blob([swCode], { type: 'application/javascript' });
                     const swUrl = URL.createObjectURL(blob);
                     
                     const registration = await navigator.serviceWorker.register(swUrl);
-                    console.log('✅ Service Worker registered successfully:', registration.scope);
+                    console.log('✅ Service Worker registered:', registration.scope);
                     
-                    // Listen for messages from service worker
-                    navigator.serviceWorker.addEventListener('message', function(event) {
-                        if (event.data.type === 'BACKGROUND_SYNC') {
-                            syncDataWhenOnline();
-                        }
-                    });
+                    document.getElementById('sw-status').textContent = 'Activ';
                     
-                    // Clean up the blob URL
                     URL.revokeObjectURL(swUrl);
                 } catch (error) {
                     console.log('❌ Service Worker registration failed:', error);
+                    document.getElementById('sw-status').textContent = 'Eroare';
                 }
-            });
-        }
-
-        // Cloud Storage Functions
-        async function syncToCloud(data) {
-            if (!isOnline || syncInProgress) return false;
-            
-            syncInProgress = true;
-            updateSyncStatus('syncing');
-            
-            try {
-                // For demo, we'll use localStorage to simulate cloud sync
-                // In production, you would use a real cloud service
-                const syncData = {
-                    data: data,
-                    timestamp: new Date().toISOString(),
-                    deviceId: getDeviceId(),
-                    version: '2.0.0'
-                };
-                
-                // Simulate API call delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Store in localStorage with cloud prefix for demo
-                localStorage.setItem('adinstalgaz_cloud_data', JSON.stringify(syncData));
-                localStorage.setItem('adinstalgaz_last_sync', new Date().toISOString());
-                
-                lastSyncTime = new Date();
-                updateSyncStatus('synced');
-                console.log('✅ Data synced to cloud');
-                return true;
-            } catch (error) {
-                console.error('❌ Cloud sync failed:', error);
-                updateSyncStatus('error');
-                return false;
-            } finally {
-                syncInProgress = false;
-                setTimeout(() => updateSyncStatus('hidden'), 3000);
+            } else {
+                document.getElementById('sw-status').textContent = 'Nu este suportat';
             }
         }
 
-        async function syncFromCloud() {
-            if (!isOnline || syncInProgress) return null;
-            
-            syncInProgress = true;
-            updateSyncStatus('syncing');
-            
-            try {
-                // Simulate API call delay
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                // Get from localStorage (simulating cloud)
-                const cloudData = localStorage.getItem('adinstalgaz_cloud_data');
-                if (!cloudData) {
-                    updateSyncStatus('hidden');
-                    return null;
-                }
-                
-                const syncData = JSON.parse(cloudData);
-                const localLastSync = localStorage.getItem('adinstalgaz_last_sync');
-                
-                // Check if cloud data is newer than local
-                if (!localLastSync || new Date(syncData.timestamp) > new Date(localLastSync)) {
-                    updateSyncStatus('synced');
-                    console.log('✅ Data synced from cloud');
-                    return syncData.data;
-                }
-                
-                updateSyncStatus('synced');
-                return null;
-            } catch (error) {
-                console.error('❌ Cloud sync failed:', error);
-                updateSyncStatus('error');
-                return null;
-            } finally {
-                syncInProgress = false;
-                setTimeout(() => updateSyncStatus('hidden'), 3000);
-            }
-        }
-
-        function getDeviceId() {
-            let deviceId = localStorage.getItem('device_id');
-            if (!deviceId) {
-                deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('device_id', deviceId);
-            }
-            return deviceId;
-        }
-
-        function updateSyncStatus(status) {
-            const syncIndicator = document.getElementById('sync-status');
-            syncIndicator.className = 'sync-status';
-            
-            switch (status) {
-                case 'syncing':
-                    syncIndicator.className += ' syncing';
-                    syncIndicator.textContent = '🔄 Sincronizare...';
-                    break;
-                case 'synced':
-                    syncIndicator.className += ' synced';
-                    syncIndicator.textContent = '✅ Sincronizat';
-                    break;
-                case 'error':
-                    syncIndicator.className += ' error';
-                    syncIndicator.textContent = '❌ Eroare sync';
-                    break;
-                case 'hidden':
-                default:
-                    syncIndicator.style.display = 'none';
-                    break;
-            }
-        }
-
-        // PWA Install Event
+        // PWA Install handling
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             
-            // Show custom install prompt after a delay
+            // Show install banner after delay
             setTimeout(() => {
-                if (!localStorage.getItem('pwa-prompt-dismissed')) {
-                    showPWAPrompt();
+                if (!localStorage.getItem('pwa-banner-dismissed')) {
+                    showPWABanner();
                 }
             }, 3000);
         });
 
-        function updateAppointmentStatus(id, newStatus) {
-            const appointment = appData.appointments.find(apt => apt.id === id);
-            if (appointment) {
-                appointment.status = newStatus;
-                if (newStatus === 'finalizat') {
-                    appointment.completedAt = new Date().toISOString();
-                }
-                saveData();
-                updateUI();
-            }
+        function showPWABanner() {
+            document.getElementById('pwa-banner').classList.add('show');
         }
 
-        function getStatusColor(status) {
-            switch (status) {
-                case 'finalizat': return '#10b981';
-                case 'in-progres': return '#f59e0b';
-                default: return '#3b82f6';
-            }
-        }
-
-        function getStatusText(status) {
-            switch (status) {
-                case 'finalizat': return 'Finalizat';
-                case 'in-progres': return 'În Progres';
-                default: return 'Programat';
-            }
-        }
-
-        // Reminder functions
-        function addReminder() {
-            const clientDropdown = document.getElementById('reminder-client-select');
-            const manualNameInput = document.getElementById('reminder-client-name');
-            const phone = document.getElementById('reminder-phone').value.trim();
-            const type = document.getElementById('reminder-type').value;
-            const date = document.getElementById('reminder-date').value;
-            const message = document.getElementById('reminder-message').value.trim();
-
-            let clientName = '';
-            let clientId = null;
-
-            if (clientDropdown.value === 'new-client') {
-                clientName = manualNameInput.value.trim();
-                if (!clientName) {
-                    alert('Te rog să introduci numele clientului!');
-                    return;
-                }
-            } else if (clientDropdown.value === '') {
-                alert('Te rog să selectezi un client sau să alegi "Client Nou"!');
-                return;
-            } else {
-                clientId = parseInt(clientDropdown.value);
-                const client = appData.clients.find(c => c.id === clientId);
-                if (client) {
-                    clientName = client.name;
-                }
-            }
-
-            if (!clientName || !phone || !type || !date || !message) {
-                alert('Te rog să completezi toate câmpurile obligatorii!');
-                return;
-            }
-
-            const newReminder = {
-                id: Date.now(),
-                clientId: clientId,
-                clientName: clientName,
-                phone: phone,
-                type: type,
-                reminderDate: date,
-                message: message,
-                sent: false,
-                createdAt: new Date().toISOString()
-            };
-
-            appData.reminders.push(newReminder);
-            saveData();
-            updateUI();
-            hideModal('addReminderModal');
-        }
-
-        function updateReminderMessage() {
-            const type = document.getElementById('reminder-type').value;
-            const messageField = document.getElementById('reminder-message');
-            
-            const templates = {
-                'verificare-instalatii-gaz': 'Bună ziua! Vă aducem aminte că se apropie termenul pentru verificarea tehnică a instalațiilor de gaze. Vă rugăm să ne contactați pentru programare. Ad Instal Gaz SRL - 0762 614 401',
-                'verificare-centrale-termice': 'Bună ziua! Este timpul pentru revizia/verificarea centralei termice. Contactați-ne pentru programare. Ad Instal Gaz SRL - 0762 614 401',
-                'urmărire-factura': 'Bună ziua! Vă aducem aminte despre factura pentru serviciile prestate. Pentru detalii, contactați-ne la 0762 614 401. Ad Instal Gaz SRL'
-            };
-
-            messageField.value = templates[type] || '';
-        }
-
-        function renderReminders() {
-            const container = document.getElementById('active-reminders');
-            const activeReminders = appData.reminders.filter(r => !r.sent);
-            
-            if (activeReminders.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔔</div>
-                        <p>Nu există reminder-e active</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = activeReminders.map(reminder => `
-                <div class="list-item">
-                    <div class="avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">🔔</div>
-                    <div class="list-content">
-                        <div class="list-title">${reminder.clientName}</div>
-                        <div class="list-subtitle">${reminder.message.substring(0, 100)}...</div>
-                        <div style="margin-top: 8px;">
-                            <span class="document-category-badge">
-                                📅 ${new Date(reminder.reminderDate).toLocaleDateString('ro-RO')}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="action-buttons">
-                        <div class="flex gap-2">
-                            <button class="btn btn-success" onclick="sendWhatsApp('${reminder.phone}', '${reminder.message}')">
-                                📱 WhatsApp
-                            </button>
-                            <button class="btn btn-primary" onclick="sendSMS('${reminder.phone}', '${reminder.message}')">
-                                💬 SMS
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function sendWhatsApp(phone, message) {
-            const cleanPhone = phone.replace(/\D/g, '').slice(-9);
-            const whatsappURL = `https://wa.me/40${cleanPhone}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappURL, '_blank');
-        }
-
-        function sendSMS(phone, message) {
-            const cleanPhone = phone.replace(/\D/g, '').slice(-9);
-            const smsURL = `sms:+40${cleanPhone}?body=${encodeURIComponent(message)}`;
-            window.location.href = smsURL;
-        }
-
-        // WhatsApp/SMS for appointments
-        function sendAppointmentWhatsApp(phone, clientName, service, date, time) {
-            const formattedDate = new Date(date).toLocaleDateString('ro-RO');
-            const message = `Bună ziua ${clientName}! Vă reamintim despre programarea pentru ${service} pe data de ${formattedDate} la ora ${time}. Ad Instal Gaz SRL - 0762 614 401`;
-            sendWhatsApp(phone, message);
-        }
-
-        function sendAppointmentSMS(phone, clientName, service, date, time) {
-            const formattedDate = new Date(date).toLocaleDateString('ro-RO');
-            const message = `Bună ziua ${clientName}! Programare ${service} pe ${formattedDate} la ${time}. Ad Instal Gaz SRL - 0762 614 401`;
-            sendSMS(phone, message);
-        }
-
-        // Tomorrow work plan functions
-        function renderTomorrowTasks() {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            
-            const tomorrowAppointments = appData.appointments.filter(apt => apt.date === tomorrowStr);
-            const appointmentsContainer = document.getElementById('tomorrow-appointments');
-            
-            if (tomorrowAppointments.length === 0) {
-                appointmentsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📅</div>
-                        <p>Nu aveți programări mâine</p>
-                    </div>
-                `;
-            } else {
-                appointmentsContainer.innerHTML = tomorrowAppointments.map(apt => `
-                    <div class="list-item">
-                        <div class="avatar" style="background: ${getStatusGradient(apt.status)}; color: white;">${apt.clientName.charAt(0).toUpperCase()}</div>
-                        <div class="list-content">
-                            <div class="list-title">⏰ ${apt.time} - ${apt.clientName}</div>
-                            <div class="list-subtitle">${apt.service} • 📍 ${apt.address}</div>
-                            <div class="list-subtitle">📞 ${apt.phone}</div>
-                        </div>
-                        <div class="action-buttons">
-                            <div class="flex gap-2">
-                                <button class="btn btn-primary" onclick="callClient('${apt.phone}')">📞</button>
-                                <button class="btn btn-success" onclick="sendAppointmentWhatsApp('${apt.phone}', '${apt.clientName}', '${apt.service}', '${apt.date}', '${apt.time}')">📱</button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            const tomorrowReminders = appData.reminders.filter(r => r.reminderDate === tomorrowStr && !r.sent);
-            const remindersContainer = document.getElementById('tomorrow-reminders');
-            
-            if (tomorrowReminders.length === 0) {
-                remindersContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔔</div>
-                        <p>Nu aveți reminder-e mâine</p>
-                    </div>
-                `;
-            } else {
-                remindersContainer.innerHTML = tomorrowReminders.map(reminder => `
-                    <div class="list-item">
-                        <div class="avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">🔔</div>
-                        <div class="list-content">
-                            <div class="list-title">${reminder.clientName}</div>
-                            <div class="list-subtitle">${reminder.message.substring(0, 50)}...</div>
-                            <div class="list-subtitle">📞 ${reminder.phone}</div>
-                        </div>
-                        <div class="action-buttons">
-                            <div class="flex gap-2">
-                                <button class="btn btn-success" onclick="sendWhatsApp('${reminder.phone}', '${reminder.message}')">📱</button>
-                                <button class="btn btn-primary" onclick="sendSMS('${reminder.phone}', '${reminder.message}')">💬</button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            if (document.getElementById('tomorrow-total-tasks')) {
-                document.getElementById('tomorrow-total-tasks').textContent = tomorrowAppointments.length + tomorrowReminders.length;
-                document.getElementById('tomorrow-appointments-count').textContent = tomorrowAppointments.length;
-                document.getElementById('tomorrow-reminders-count').textContent = tomorrowReminders.length;
-            }
-        }
-
-        function exportTomorrowWorkPlan() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            const tomorrowFormatted = tomorrow.toLocaleDateString('ro-RO');
-            
-            doc.setFontSize(20);
-            doc.text('FIȘA DE LUCRU', 20, 20);
-            doc.setFontSize(16);
-            doc.text(`Ad Instal Gaz SRL - ${tomorrowFormatted}`, 20, 30);
-            
-            let yPosition = 50;
-            
-            const tomorrowAppointments = appData.appointments.filter(apt => apt.date === tomorrowStr);
-            if (tomorrowAppointments.length > 0) {
-                doc.setFontSize(14);
-                doc.text('PROGRAMĂRI:', 20, yPosition);
-                yPosition += 10;
-                
-                const appointmentsData = tomorrowAppointments.map(apt => [
-                    apt.time,
-                    apt.clientName,
-                    apt.service,
-                    apt.address,
-                    apt.phone
-                ]);
-                
-                doc.autoTable({
-                    startY: yPosition,
-                    head: [['Ora', 'Client', 'Serviciu', 'Adresa', 'Telefon']],
-                    body: appointmentsData,
-                    margin: { left: 20 },
-                    styles: { fontSize: 10 }
-                });
-                
-                yPosition = doc.lastAutoTable.finalY + 20;
-            }
-            
-            const tomorrowReminders = appData.reminders.filter(r => r.reminderDate === tomorrowStr && !r.sent);
-            if (tomorrowReminders.length > 0) {
-                doc.setFontSize(14);
-                doc.text('REMINDER-E DE TRIMIS:', 20, yPosition);
-                yPosition += 10;
-                
-                const remindersData = tomorrowReminders.map(r => [
-                    r.clientName,
-                    r.phone,
-                    r.type,
-                    r.message.substring(0, 50) + '...'
-                ]);
-                
-                doc.autoTable({
-                    startY: yPosition,
-                    head: [['Client', 'Telefon', 'Tip', 'Mesaj']],
-                    body: remindersData,
-                    margin: { left: 20 },
-                    styles: { fontSize: 9 }
-                });
-            }
-            
-            doc.save(`Fisa-Lucru-${tomorrowFormatted}.pdf`);
-        }
-
-        // Reminder automation functions
-        function sendTomorrowReminders() {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            
-            const tomorrowReminders = appData.reminders.filter(r => r.reminderDate === tomorrowStr && !r.sent);
-            
-            if (tomorrowReminders.length === 0) {
-                alert('Nu există reminder-e programate pentru mâine.');
-                return;
-            }
-            
-            if (confirm(`Vrei să trimiți ${tomorrowReminders.length} reminder-e prin WhatsApp pentru mâine?`)) {
-                tomorrowReminders.forEach(reminder => {
-                    sendWhatsApp(reminder.phone, reminder.message);
-                    reminder.sent = true;
-                });
-                
-                saveData();
-                updateUI();
-                alert(`✅ ${tomorrowReminders.length} reminder-e trimise cu succes!`);
-            }
-        }
-
-        function sendTodayReminders() {
-            const today = new Date().toISOString().split('T')[0];
-            const todayReminders = appData.reminders.filter(r => r.reminderDate === today && !r.sent);
-            
-            if (todayReminders.length === 0) {
-                alert('Nu există reminder-e programate pentru azi.');
-                return;
-            }
-            
-            if (confirm(`Vrei să trimiți ${todayReminders.length} reminder-e prin WhatsApp pentru azi?`)) {
-                todayReminders.forEach(reminder => {
-                    sendWhatsApp(reminder.phone, reminder.message);
-                    reminder.sent = true;
-                });
-                
-                saveData();
-                updateUI();
-                alert(`✅ ${todayReminders.length} reminder-e trimise cu succes!`);
-            }
-        }
-
-        // Export functions
-        function exportToExcel() {
-            const wb = XLSX.utils.book_new();
-            
-            const clientsData = appData.clients.map(client => ({
-                'Nume': client.name,
-                'Telefon': client.phone,
-                'Email': client.email || '',
-                'Adresa': client.address,
-                'Documente': client.documents ? client.documents.length : 0,
-                'Data Adăugării': new Date(client.createdAt).toLocaleDateString('ro-RO')
-            }));
-            const clientsWS = XLSX.utils.json_to_sheet(clientsData);
-            XLSX.utils.book_append_sheet(wb, clientsWS, 'Clienți');
-            
-            const appointmentsData = appData.appointments.map(apt => ({
-                'Client': apt.clientName,
-                'Telefon': apt.phone,
-                'Serviciu': apt.service,
-                'Data': new Date(apt.date).toLocaleDateString('ro-RO'),
-                'Ora': apt.time,
-                'Adresa': apt.address,
-                'Preț (RON)': apt.price || 0,
-                'Status': getStatusText(apt.status),
-                'Observații': apt.notes || '',
-                'Data Creării': new Date(apt.createdAt).toLocaleDateString('ro-RO')
-            }));
-            const appointmentsWS = XLSX.utils.json_to_sheet(appointmentsData);
-            XLSX.utils.book_append_sheet(wb, appointmentsWS, 'Programări');
-            
-            const remindersData = appData.reminders.map(reminder => ({
-                'Client': reminder.clientName,
-                'Telefon': reminder.phone,
-                'Tip': reminder.type,
-                'Data Reminder': new Date(reminder.reminderDate).toLocaleDateString('ro-RO'),
-                'Mesaj': reminder.message,
-                'Trimis': reminder.sent ? 'Da' : 'Nu',
-                'Data Creării': new Date(reminder.createdAt).toLocaleDateString('ro-RO')
-            }));
-            const remindersWS = XLSX.utils.json_to_sheet(remindersData);
-            XLSX.utils.book_append_sheet(wb, remindersWS, 'Reminder-uri');
-            
-            const stats = calculateStats();
-            const statsData = [
-                { 'Indicator': 'Total Clienți', 'Valoare': stats.totalClients },
-                { 'Indicator': 'Programări Luna Aceasta', 'Valoare': stats.monthAppointments },
-                { 'Indicator': 'Programări în Așteptare', 'Valoare': stats.pending },
-                { 'Indicator': 'Servicii Finalizate', 'Valoare': stats.completed },
-                { 'Indicator': 'Venituri Luna (RON)', 'Valoare': stats.monthRevenue }
-            ];
-            const statsWS = XLSX.utils.json_to_sheet(statsData);
-            XLSX.utils.book_append_sheet(wb, statsWS, 'Statistici');
-            
-            XLSX.writeFile(wb, `AdInstalGaz-Raport-${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.xlsx`);
-        }
-
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const stats = calculateStats();
-            
-            doc.setFontSize(20);
-            doc.text('RAPORT BUSINESS', 20, 20);
-            doc.setFontSize(16);
-            doc.text(`Ad Instal Gaz SRL - ${new Date().toLocaleDateString('ro-RO')}`, 20, 30);
-            
-            let yPosition = 50;
-            
-            doc.setFontSize(14);
-            doc.text('STATISTICI GENERALE:', 20, yPosition);
-            yPosition += 20;
-            
-            const generalStats = [
-                ['Total Clienți', stats.totalClients],
-                ['Programări Luna Aceasta', stats.monthAppointments],
-                ['Servicii în Așteptare', stats.pending],
-                ['Servicii Finalizate', stats.completed],
-                ['Venituri Luna (RON)', stats.monthRevenue]
-            ];
-            
-            doc.autoTable({
-                startY: yPosition,
-                head: [['Indicator', 'Valoare']],
-                body: generalStats,
-                margin: { left: 20 },
-                styles: { fontSize: 12 }
-            });
-            
-            yPosition = doc.lastAutoTable.finalY + 20;
-            
-            if (appData.appointments.length > 0) {
-                doc.setFontSize(14);
-                doc.text('PROGRAMĂRI RECENTE:', 20, yPosition);
-                yPosition += 10;
-                
-                const recentAppointments = appData.appointments.slice(-10).map(apt => [
-                    apt.clientName,
-                    apt.service,
-                    new Date(apt.date).toLocaleDateString('ro-RO'),
-                    getStatusText(apt.status)
-                ]);
-                
-                doc.autoTable({
-                    startY: yPosition,
-                    head: [['Client', 'Serviciu', 'Data', 'Status']],
-                    body: recentAppointments,
-                    margin: { left: 20 },
-                    styles: { fontSize: 10 }
-                });
-            }
-            
-            doc.save(`AdInstalGaz-Raport-${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.pdf`);
-        }
-
-        function exportHelpToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            doc.setFontSize(20);
-            doc.text('GHID DE UTILIZARE', 20, 20);
-            doc.setFontSize(16);
-            doc.text('Ad Instal Gaz SRL - Aplicație PWA', 20, 30);
-            
-            let yPosition = 50;
-            
-            const helpSections = [
-                {
-                    title: 'PRIMII PAȘI',
-                    content: [
-                        '1. Adaugă primul client în secțiunea Clienți',
-                        '2. Creează prima programare în secțiunea Programări',
-                        '3. Arhivează documente pentru fiecare client',
-                        '4. Verifică fișa de lucru pentru mâine'
-                    ]
-                },
-                {
-                    title: 'FUNCȚII PWA',
-                    content: [
-                        '• Instalează aplicația pe telefon/desktop',
-                        '• Funcționează offline pentru vizualizare',
-                        '• Sincronizare automată când revii online',
-                        '• Experiență ca o aplicație nativă'
-                    ]
-                },
-                {
-                    title: 'NOTIFICĂRI AUTOMATE',
-                    content: [
-                        '• WhatsApp și SMS cu un click',
-                        '• Mesaje pre-completate pentru programări',
-                        '• Reminder-e automate pentru clienți',
-                        '• Export fișe de lucru pentru teren'
-                    ]
-                }
-            ];
-            
-            helpSections.forEach(section => {
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 20;
-                }
-                
-                doc.setFontSize(14);
-                doc.text(section.title, 20, yPosition);
-                yPosition += 15;
-                
-                doc.setFontSize(11);
-                section.content.forEach(item => {
-                    doc.text(item, 25, yPosition);
-                    yPosition += 8;
-                });
-                yPosition += 10;
-            });
-            
-            doc.save('AdInstalGaz-Ghid-Utilizare.pdf');
-        }
-
-        function backupData() {
-            const backup = {
-                data: appData,
-                timestamp: new Date().toISOString(),
-                version: '1.0.0',
-                appName: 'Ad Instal Gaz SRL'
-            };
-            
-            const dataStr = JSON.stringify(backup, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `AdInstalGaz-Backup-${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.json`;
-            link.click();
-            
-            URL.revokeObjectURL(link.href);
-        }
-
-        function restoreData(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const backup = JSON.parse(e.target.result);
-                    
-                    if (backup.data && backup.appName === 'Ad Instal Gaz SRL') {
-                        if (confirm('Sigur vrei să restaurezi datele? Datele actuale vor fi înlocuite!')) {
-                            appData = backup.data;
-                            
-                            // Ensure documents array exists for all clients
-                            appData.clients.forEach(client => {
-                                if (!client.documents) {
-                                    client.documents = [];
-                                }
-                            });
-                            
-                            saveData();
-                            updateUI();
-                            alert('✅ Datele au fost restaurate cu succes!');
-                        }
-                    } else {
-                        alert('❌ Fișierul nu este un backup valid!');
-                    }
-                } catch (error) {
-                    alert('❌ Eroare la citirea fișierului!');
-                }
-            };
-            reader.readAsText(file);
-            
-            // Reset input
-            input.value = '';
-        }
-
-        // Manual sync functions
-        async function manualSync() {
-            if (!isOnline) {
-                alert('❌ Nu ești conectat la internet! Sincronizarea necesită conexiune.');
-                return;
-            }
-
-            const confirmSync = confirm('🔄 Vrei să sincronizezi datele cu cloud-ul?\n\n⬆️ Upload: Trimite datele locale în cloud\n⬇️ Download: Descarcă datele din cloud\n\nAlege "OK" pentru sync complet (ambele direcții)');
-            
-            if (!confirmSync) return;
-
-            try {
-                updateSyncStatus('syncing');
-                
-                // First, upload local data to cloud
-                const uploadSuccess = await syncToCloud(appData);
-                
-                if (uploadSuccess) {
-                    // Then check if there are newer updates in cloud
-                    const cloudData = await syncFromCloud();
-                    
-                    if (cloudData && cloudData !== appData) {
-                        const useCloudData = confirm('📥 S-au găsit date diferite în cloud. Vrei să le folosești?\n\n"OK" = Folosește datele din cloud\n"Cancel" = Păstrează datele locale');
-                        
-                        if (useCloudData) {
-                            appData = cloudData;
-                            appData.clients.forEach(client => {
-                                if (!client.documents) client.documents = [];
-                            });
-                            saveData(false); // Save without triggering another cloud sync
-                            updateUI();
-                        }
-                    }
-                    
-                    alert('✅ Sincronizare completă realizată cu succes!');
-                } else {
-                    alert('❌ Eroare la sincronizare. Te rog încearcă din nou.');
-                }
-            } catch (error) {
-                console.error('❌ Manual sync failed:', error);
-                updateSyncStatus('error');
-                alert('❌ Eroare la sincronizare: ' + error.message);
-            }
-        }
-
-        async function exportCloudBackup() {
-            if (!isOnline) {
-                alert('❌ Nu ești conectat la internet!');
-                return;
-            }
-
-            try {
-                updateSyncStatus('syncing');
-                
-                // Get latest data from cloud
-                const cloudData = await syncFromCloud();
-                const dataToExport = cloudData || appData;
-                
-                const backup = {
-                    data: dataToExport,
-                    timestamp: new Date().toISOString(),
-                    version: '2.0.0',
-                    appName: 'Ad Instal Gaz SRL',
-                    deviceId: getDeviceId(),
-                    exportType: 'cloud_backup'
-                };
-                
-                const dataStr = JSON.stringify(backup, null, 2);
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(dataBlob);
-                link.download = `AdInstalGaz-CloudBackup-${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.json`;
-                link.click();
-                
-                URL.revokeObjectURL(link.href);
-                updateSyncStatus('synced');
-                
-                setTimeout(() => updateSyncStatus('hidden'), 2000);
-                
-            } catch (error) {
-                console.error('❌ Cloud export failed:', error);
-                updateSyncStatus('error');
-                alert('❌ Eroare la export cloud: ' + error.message);
-            }
-        }
-
-        // Enhanced backup with cloud info
-        function backupData() {
-            const backup = {
-                data: appData,
-                timestamp: new Date().toISOString(),
-                version: '2.0.0',
-                appName: 'Ad Instal Gaz SRL',
-                deviceId: getDeviceId(),
-                lastSync: localStorage.getItem('adinstalgaz_last_sync'),
-                exportType: 'local_backup'
-            };
-            
-            const dataStr = JSON.stringify(backup, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `AdInstalGaz-LocalBackup-${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.json`;
-            link.click();
-            
-            URL.revokeObjectURL(link.href);
-        }
-
-        // Enhanced restore with cloud sync options
-        function restoreData(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const backup = JSON.parse(e.target.result);
-                    
-                    if (backup.data && backup.appName === 'Ad Instal Gaz SRL') {
-                        const message = backup.exportType === 'cloud_backup' 
-                            ? 'Sigur vrei să restaurezi backup-ul din cloud? Datele actuale vor fi înlocuite!'
-                            : 'Sigur vrei să restaurezi backup-ul local? Datele actuale vor fi înlocuite!';
-                            
-                        if (confirm(message)) {
-                            appData = backup.data;
-                            
-                            appData.clients.forEach(client => {
-                                if (!client.documents) client.documents = [];
-                            });
-                            
-                            saveData();
-                            updateUI();
-                            
-                            const syncMessage = isOnline && backup.exportType === 'local_backup'
-                                ? '\n\n🔄 Vrei să sincronizezi aceste date și în cloud?'
-                                : '';
-                                
-                            if (syncMessage && confirm('✅ Datele au fost restaurate cu succes!' + syncMessage)) {
-                                syncToCloud(appData);
-                            } else {
-                                alert('✅ Datele au fost restaurate cu succes!');
-                            }
-                        }
-                    } else {
-                        alert('❌ Fișierul nu este un backup valid!');
-                    }
-                } catch (error) {
-                    alert('❌ Eroare la citirea fișierului!');
-                }
-            };
-            reader.readAsText(file);
-            
-            input.value = '';
-        }
-
-        function deleteAllData() {
-            const confirmation = document.getElementById('delete-confirmation').value;
-            const checkbox = document.getElementById('delete-checkbox').checked;
-            
-            if (confirmation !== 'STERGE TOTUL') {
-                alert('Te rog să scrii exact "STERGE TOTUL" pentru confirmare!');
-                return;
-            }
-            
-            if (!checkbox) {
-                alert('Te rog să bifezi caseta de confirmare!');
-                return;
-            }
-            
-            if (confirm('ULTIMA CONFIRMARE: Sigur vrei să ștergi TOATE datele? (inclusiv din cloud)')) {
-                appData = { clients: [], appointments: [], reminders: [] };
-                localStorage.removeItem('adinstalgaz_data');
-                localStorage.removeItem('pending-sync');
-                localStorage.removeItem('pwa-prompt-dismissed');
-                localStorage.removeItem('adinstalgaz_cloud_data');
-                localStorage.removeItem('adinstalgaz_last_sync');
-                localStorage.removeItem('adinstalgaz_last_local_update');
-                
-                // Clear cloud data if online
-                if (isOnline) {
-                    syncToCloud({ clients: [], appointments: [], reminders: [] });
-                }
-                
-                updateUI();
-                hideModal('deleteDataModal');
-                alert('✅ Toate datele au fost șterse (local și cloud)!');
-            }
-        }
-
-        // Statistics calculation
-        function calculateStats() {
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            
-            const monthAppointments = appData.appointments.filter(apt => {
-                const aptDate = new Date(apt.date);
-                return aptDate.getMonth() === currentMonth && aptDate.getFullYear() === currentYear;
-            });
-            
-            const pending = appData.appointments.filter(apt => apt.status === 'programat').length;
-            const completed = appData.appointments.filter(apt => apt.status === 'finalizat').length;
-            
-            const monthRevenue = monthAppointments
-                .filter(apt => apt.status === 'finalizat')
-                .reduce((sum, apt) => sum + (apt.price || 0), 0);
-            
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            
-            const tomorrowAppointments = appData.appointments.filter(apt => apt.date === tomorrowStr);
-            const tomorrowReminders = appData.reminders.filter(r => r.reminderDate === tomorrowStr && !r.sent);
-            
-            return {
-                totalClients: appData.clients.length,
-                monthAppointments: monthAppointments.length,
-                pending,
-                completed,
-                monthRevenue,
-                tomorrowTasks: tomorrowAppointments.length + tomorrowReminders.length
-            };
-        }
-
-        // UI Update function
-        function updateUI() {
-            const stats = calculateStats();
-            
-            // Update dashboard stats
-            if (document.getElementById('total-clients')) {
-                document.getElementById('total-clients').textContent = stats.totalClients;
-                document.getElementById('month-appointments').textContent = stats.monthAppointments;
-                document.getElementById('pending-appointments').textContent = stats.pending;
-                document.getElementById('month-revenue').textContent = `${stats.monthRevenue} RON`;
-                document.getElementById('tomorrow-tasks').textContent = stats.tomorrowTasks;
-            }
-            
-            // Update counts in headers
-            if (document.getElementById('clients-count')) {
-                document.getElementById('clients-count').textContent = appData.clients.length;
-            }
-            if (document.getElementById('appointments-count')) {
-                document.getElementById('appointments-count').textContent = appData.appointments.length;
-            }
-            
-            // Update reports stats
-            if (document.getElementById('report-appointments')) {
-                document.getElementById('report-appointments').textContent = stats.monthAppointments;
-                document.getElementById('report-completed').textContent = stats.completed;
-                document.getElementById('report-revenue').textContent = `${stats.monthRevenue} RON`;
-            }
-            
-            // Render components based on active section
-            const activeSection = document.querySelector('.section.active');
-            if (activeSection) {
-                const sectionId = activeSection.id;
-                
-                switch (sectionId) {
-                    case 'dashboard':
-                        renderDashboard();
-                        break;
-                    case 'clients':
-                        renderClients();
-                        break;
-                    case 'appointments':
-                        renderAppointments();
-                        break;
-                    case 'workplan':
-                        renderTomorrowTasks();
-                        break;
-                    case 'reminders':
-                        renderReminders();
-                        break;
-                }
-            }
-        }
-
-        function renderDashboard() {
-            // Recent appointments
-            const recentAppointments = appData.appointments
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .slice(0, 5);
-            
-            const recentAppointmentsContainer = document.getElementById('recent-appointments');
-            if (recentAppointments.length === 0) {
-                recentAppointmentsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📅</div>
-                        <p>Nu există programări încă</p>
-                    </div>
-                `;
-            } else {
-                recentAppointmentsContainer.innerHTML = recentAppointments.map(apt => `
-                    <div class="list-item">
-                        <div class="avatar" style="background: ${getStatusGradient(apt.status)}; color: white; width: 40px; height: 40px; font-size: 1rem;">
-                            ${apt.clientName.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="list-content">
-                            <div class="list-title" style="font-size: 0.9rem;">${apt.clientName}</div>
-                            <div class="list-subtitle" style="font-size: 0.8rem;">
-                                ${apt.service} • ${new Date(apt.date).toLocaleDateString('ro-RO')}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            // Recent clients
-            const recentClients = appData.clients
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .slice(0, 5);
-            
-            const recentClientsContainer = document.getElementById('recent-clients');
-            if (recentClients.length === 0) {
-                recentClientsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <p>Nu există clienți încă</p>
-                    </div>
-                `;
-            } else {
-                recentClientsContainer.innerHTML = recentClients.map(client => `
-                    <div class="list-item">
-                        <div class="avatar" style="width: 40px; height: 40px; font-size: 1rem;">${client.name.charAt(0).toUpperCase()}</div>
-                        <div class="list-content">
-                            <div class="list-title" style="font-size: 0.9rem;">${client.name}</div>
-                            <div class="list-subtitle" style="font-size: 0.8rem;">
-                                📞 ${client.phone}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-    </script>
-</body>
-</html> showPWAPrompt() {
-            document.getElementById('pwa-install-prompt').style.display = 'block';
-        }
-
-        function hidePWAPrompt() {
-            document.getElementById('pwa-install-prompt').style.display = 'none';
-            localStorage.setItem('pwa-prompt-dismissed', 'true');
+        function dismissPWABanner() {
+            document.getElementById('pwa-banner').classList.remove('show');
+            localStorage.setItem('pwa-banner-dismissed', 'true');
         }
 
         async function installPWA() {
@@ -3174,140 +1035,96 @@
                 
                 if (outcome === 'accepted') {
                     console.log('✅ PWA installed');
-                    hidePWAPrompt();
+                    pwaData.installCount++;
+                    savePWAData();
+                    updateStats();
+                    dismissPWABanner();
+                    document.getElementById('install-status').textContent = 'Da';
                 } else {
                     console.log('❌ PWA installation declined');
                 }
                 
                 deferredPrompt = null;
             } else {
-                // Fallback for browsers that don't support beforeinstallprompt
-                alert('Pentru a instala aplicația:\n\n📱 Pe telefon: Apasă pe meniul browser-ului și selectează "Add to Home Screen"\n\n💻 Pe desktop: Caută iconița de instalare în bara de adrese');
-                hidePWAPrompt();
+                // Fallback for browsers without beforeinstallprompt
+                alert('Pentru a instala aplicația:\n\n📱 Android: Menu → "Add to Home Screen"\n🍎 iOS: Share → "Add to Home Screen"\n💻 Desktop: Iconița din bara de adrese');
             }
         }
 
-        // Online/Offline Status
-        window.addEventListener('online', () => {
-            isOnline = true;
-            document.getElementById('offline-indicator').style.display = 'none';
-            document.getElementById('online-indicator').style.display = 'block';
+        // Sync functions
+        function showSyncIndicator(status, message) {
+            const indicator = document.getElementById('sync-indicator');
+            indicator.className = `sync-indicator show ${status}`;
+            indicator.textContent = message;
+            
             setTimeout(() => {
-                document.getElementById('online-indicator').style.display = 'none';
+                indicator.classList.remove('show');
             }, 3000);
+        }
+
+        async function syncNow() {
+            showSyncIndicator('syncing', '🔄 Sincronizare...');
             
-            // Sync data when coming back online
-            syncDataWhenOnline();
-        });
-
-        window.addEventListener('offline', () => {
-            isOnline = false;
-            document.getElementById('online-indicator').style.display = 'none';
-            document.getElementById('offline-indicator').style.display = 'block';
-        });
-
-        function syncDataWhenOnline() {
-            // Check if there's pending sync data
-            const pendingSync = localStorage.getItem('pending-sync');
-            if (pendingSync) {
-                try {
-                    const data = JSON.parse(pendingSync);
-                    // Merge pending changes with current data
-                    appData = { ...appData, ...data };
-                    saveData();
-                    localStorage.removeItem('pending-sync');
-                    console.log('✅ Data synced successfully');
-                } catch (error) {
-                    console.error('❌ Sync failed:', error);
-                }
+            try {
+                // Simulate sync delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                pwaData.syncCount++;
+                pwaData.lastSync = new Date().toISOString();
+                savePWAData();
+                
+                showSyncIndicator('synced', '✅ Sincronizat');
+                updateStats();
+                
+                console.log('✅ Sync completed');
+            } catch (error) {
+                showSyncIndicator('error', '❌ Eroare sync');
+                console.error('❌ Sync failed:', error);
             }
         }
 
-        // Error handling for browser extensions
-        window.addEventListener('error', function(e) {
-            if (e.message && e.message.includes('message channel closed')) {
-                e.preventDefault();
-                return false;
-            }
-        });
+        function testSync() {
+            syncNow();
+        }
 
-        window.addEventListener('unhandledrejection', function(e) {
-            if (e.reason && e.reason.message && e.reason.message.includes('message channel closed')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Global data storage
-        let appData = {
-            clients: [],
-            appointments: [],
-            reminders: []
-        };
-
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            updateUI();
-            updateDateTime();
-            setInterval(updateDateTime, 60000);
-            
-            // Check if already dismissed PWA prompt
-            if (localStorage.getItem('pwa-prompt-dismissed')) {
-                document.getElementById('pwa-install-prompt').style.display = 'none';
-            }
-        });
-
-        // Date and time functions
+        // UI Updates
         function updateDateTime() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('ro-RO');
-            const timeStr = now.toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'});
-            
             document.getElementById('current-date').textContent = dateStr;
-            document.getElementById('last-update-time').textContent = timeStr;
         }
 
-        // Enhanced data persistence with cloud sync
-        function saveData(triggerCloudSync = true) {
-            try {
-                const dataToSave = JSON.stringify(appData);
-                localStorage.setItem('adinstalgaz_data', dataToSave);
-                localStorage.setItem('adinstalgaz_last_local_update', new Date().toISOString());
-                
-                // Trigger cloud sync if online
-                if (triggerCloudSync && isOnline && !syncInProgress) {
-                    syncToCloud(appData);
-                } else if (triggerCloudSync && !isOnline) {
-                    // Store for sync when online
-                    localStorage.setItem('pending-sync', dataToSave);
-                    console.log('📱 Data saved offline, will sync when online');
-                }
-            } catch (error) {
-                console.error('❌ Error saving data:', error);
-                if (error.name === 'QuotaExceededError') {
-                    alert('⚠️ Spațiul de stocare este plin. Te rog să faci backup și să ștergi datele vechi.');
-                }
+        function updateStats() {
+            document.getElementById('install-count').textContent = pwaData.installCount;
+            document.getElementById('sync-count').textContent = pwaData.syncCount;
+            
+            if (pwaData.lastSync) {
+                const lastSync = new Date(pwaData.lastSync);
+                document.getElementById('last-sync-time').textContent = lastSync.toLocaleString('ro-RO');
             }
         }
 
-        function loadData() {
-            try {
-                const saved = localStorage.getItem('adinstalgaz_data');
-                if (saved) {
-                    appData = JSON.parse(saved);
-                    // Ensure documents array exists for all clients
-                    appData.clients.forEach(client => {
-                        if (!client.documents) {
-                            client.documents = [];
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('❌ Error loading data:', error);
-                // Reset to default if data is corrupted
-                appData = { clients: [], appointments: [], reminders: [] };
-            }
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browser = 'Unknown';
+            
+            if (userAgent.includes('Chrome')) browser = 'Chrome';
+            else if (userAgent.includes('Firefox')) browser = 'Firefox';
+            else if (userAgent.includes('Safari')) browser = 'Safari';
+            else if (userAgent.includes('Edge')) browser = 'Edge';
+            
+            document.getElementById('browser-info').textContent = browser;
+            
+            // Check PWA support
+            const pwaSupport = 'serviceWorker' in navigator && 'PushManager' in window;
+            document.getElementById('pwa-support').textContent = pwaSupport ? 'Da' : 'Parțial';
+            
+            // Check if installed
+            const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+            document.getElementById('install-status').textContent = isInstalled ? 'Da' : 'Nu';
+            
+            // Device status
+            document.getElementById('device-status').textContent = navigator.onLine ? '🟢 Online' : '🔴 Offline';
         }
 
         // Navigation
@@ -3322,689 +1139,39 @@
             
             document.getElementById(sectionId).classList.add('active');
             document.getElementById('nav-' + sectionId).classList.add('active');
-            
-            updateUI();
         }
 
-        // Modal functions
-        function showModal(modalId) {
-            if (modalId === 'addAppointmentModal') {
-                populateClientDropdown();
-            } else if (modalId === 'addReminderModal') {
-                populateReminderClientDropdown();
-            }
-            document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function populateClientDropdown() {
-            const dropdown = document.getElementById('appointment-client-select');
-            const defaultOptions = \`
-                <option value="">Selectează clientul</option>
-                <option value="new-client">+ Client Nou (introdu manual)</option>
-            \`;
-            
-            const clientOptions = appData.clients.map(client => 
-                \`<option value="\${client.id}">\${client.name} - \${client.phone}</option>\`
-            ).join('');
-            
-            dropdown.innerHTML = defaultOptions + clientOptions;
-        }
-
-        function populateReminderClientDropdown() {
-            const dropdown = document.getElementById('reminder-client-select');
-            const defaultOptions = \`
-                <option value="">Selectează clientul</option>
-                <option value="new-client">+ Client Nou (introdu manual)</option>
-            \`;
-            
-            const clientOptions = appData.clients.map(client => 
-                \`<option value="\${client.id}">\${client.name} - \${client.phone}</option>\`
-            ).join('');
-            
-            dropdown.innerHTML = defaultOptions + clientOptions;
-        }
-
-        function selectClient() {
-            const dropdown = document.getElementById('appointment-client-select');
-            const manualGroup = document.getElementById('manual-client-group');
-            const phoneInput = document.getElementById('appointment-phone');
-            const addressInput = document.getElementById('appointment-address');
-            const nameInput = document.getElementById('appointment-client-name');
-            
-            const selectedValue = dropdown.value;
-            
-            if (selectedValue === 'new-client') {
-                manualGroup.style.display = 'block';
-                nameInput.required = true;
-                phoneInput.value = '';
-                addressInput.value = '';
-                nameInput.value = '';
-            } else if (selectedValue === '') {
-                manualGroup.style.display = 'none';
-                nameInput.required = false;
-                phoneInput.value = '';
-                addressInput.value = '';
-                nameInput.value = '';
-            } else {
-                manualGroup.style.display = 'none';
-                nameInput.required = false;
-                const client = appData.clients.find(c => c.id == selectedValue);
-                if (client) {
-                    phoneInput.value = client.phone;
-                    addressInput.value = client.address;
-                    nameInput.value = client.name;
-                }
-            }
-        }
-
-        function selectReminderClient() {
-            const dropdown = document.getElementById('reminder-client-select');
-            const manualGroup = document.getElementById('manual-reminder-client-group');
-            const phoneInput = document.getElementById('reminder-phone');
-            const nameInput = document.getElementById('reminder-client-name');
-            
-            const selectedValue = dropdown.value;
-            
-            if (selectedValue === 'new-client') {
-                manualGroup.style.display = 'block';
-                nameInput.required = true;
-                phoneInput.value = '';
-                nameInput.value = '';
-            } else if (selectedValue === '') {
-                manualGroup.style.display = 'none';
-                nameInput.required = false;
-                phoneInput.value = '';
-                nameInput.value = '';
-            } else {
-                manualGroup.style.display = 'none';
-                nameInput.required = false;
-                const client = appData.clients.find(c => c.id == selectedValue);
-                if (client) {
-                    phoneInput.value = client.phone;
-                    nameInput.value = client.name;
-                }
-            }
-        }
-
-        function hideModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = 'auto';
-            clearModalInputs(modalId);
-        }
-
-        function clearModalInputs(modalId) {
-            const modal = document.getElementById(modalId);
-            const inputs = modal.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
-                if (input.type === 'checkbox' || input.type === 'radio') {
-                    input.checked = false;
-                } else {
-                    input.value = '';
-                }
-            });
-            
-            if (modalId === 'addAppointmentModal') {
-                const manualGroup = document.getElementById('manual-client-group');
-                const nameInput = document.getElementById('appointment-client-name');
-                manualGroup.style.display = 'none';
-                nameInput.required = false;
-            }
-            
-            if (modalId === 'addReminderModal') {
-                const manualGroup = document.getElementById('manual-reminder-client-group');
-                const nameInput = document.getElementById('reminder-client-name');
-                manualGroup.style.display = 'none';
-                nameInput.required = false;
-            }
-            
-            if (modalId === 'documentUploadModal') {
-                const subcategorySelect = document.getElementById('document-subcategory');
-                if (subcategorySelect) {
-                    subcategorySelect.innerHTML = '<option value="">Selectează subcategoria</option>';
-                }
-                currentUploadClientId = null;
-            }
-        }
-
-        // Client functions
-        function addClient() {
-            const name = document.getElementById('client-name').value.trim();
-            const phone = document.getElementById('client-phone').value.trim();
-            const email = document.getElementById('client-email').value.trim();
-            const address = document.getElementById('client-address').value.trim();
-
-            if (!name || !phone || !address) {
-                alert('Te rog să completezi toate câmpurile obligatorii!');
-                return;
-            }
-
-            const newClient = {
-                id: Date.now(),
-                name: name,
-                phone: phone,
-                email: email,
-                address: address,
-                createdAt: new Date().toISOString(),
-                totalServices: 0,
-                documents: []
-            };
-
-            appData.clients.push(newClient);
-            saveData();
-            updateUI();
-            hideModal('addClientModal');
-        }
-
-        // Client documents functions
-        let currentUploadClientId = null;
-        
-        function uploadClientDocument(clientId) {
-            currentUploadClientId = clientId;
-            showModal('documentUploadModal');
-        }
-
-        // Document category system
-        const documentSubcategories = {
-            'PV-uri': [
-                'PV Verificare Tehnică',
-                'PV Revizie Periodică', 
-                'Certificat Instalație',
-                'Proces Verbal Recepție',
-                'Certificat Conformitate'
-            ],
-            'Documente': [
-                'Factură',
-                'Contract',
-                'Autorizație',
-                'Cerere',
-                'Notificare'
-            ],
-            'Fotografii': [
-                'Poze Instalație',
-                'Poze Defecte',
-                'Poze Finalizare',
-                'Poze Echipamente',
-                'Poze Măsurători'
-            ],
-            'Tehnice': [
-                'Schemă Instalație',
-                'Raport Tehnic',
-                'Teste și Măsurători',
-                'Specificații Echipamente',
-                'Manual Utilizare'
-            ],
-            'Altele': [
-                'Corespondență',
-                'Note Interne',
-                'Diverse'
-            ]
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const categorySelect = document.getElementById('document-category');
-            const subcategorySelect = document.getElementById('document-subcategory');
-            
-            if (categorySelect && subcategorySelect) {
-                categorySelect.addEventListener('change', function() {
-                    const category = this.value;
-                    subcategorySelect.innerHTML = '<option value="">Selectează subcategoria</option>';
-                    
-                    if (category && documentSubcategories[category]) {
-                        documentSubcategories[category].forEach(sub => {
-                            subcategorySelect.innerHTML += \`<option value="\${sub}">\${sub}</option>\`;
-                        });
-                    }
-                });
-            }
+        // Online/Offline handling
+        window.addEventListener('online', () => {
+            isOnline = true;
+            document.getElementById('device-status').textContent = '🟢 Online';
+            document.getElementById('sync-status-text').textContent = 'Disponibil';
         });
 
-        function uploadDocument() {
-            const fileInput = document.getElementById('document-file');
-            const category = document.getElementById('document-category').value;
-            const subcategory = document.getElementById('document-subcategory').value;
-            const description = document.getElementById('document-description').value.trim();
-            const notes = document.getElementById('document-notes').value.trim();
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            document.getElementById('device-status').textContent = '🔴 Offline';
+            document.getElementById('sync-status-text').textContent = 'Offline';
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPWAData();
+            generateManifest();
+            registerServiceWorker();
+            updateDateTime();
+            updateStats();
+            detectBrowser();
             
-            if (!currentUploadClientId || !fileInput.files[0] || !category) {
-                alert('Te rog să completezi categoria și să selectezi un fișier!');
-                return;
+            setInterval(updateDateTime, 60000);
+            
+            // Check if banner was dismissed
+            if (localStorage.getItem('pwa-banner-dismissed')) {
+                document.getElementById('pwa-banner').style.display = 'none';
             }
             
-            const file = fileInput.files[0];
-            
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Fișierul este prea mare! Mărimea maximă este 10MB.');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const document = {
-                    id: Date.now(),
-                    name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    data: e.target.result,
-                    category: category,
-                    subcategory: subcategory,
-                    description: description || file.name,
-                    notes: notes,
-                    uploadDate: new Date().toISOString()
-                };
-                
-                const client = appData.clients.find(c => c.id === currentUploadClientId);
-                if (client) {
-                    if (!client.documents) client.documents = [];
-                    client.documents.push(document);
-                    saveData();
-                    updateUI();
-                    hideModal('documentUploadModal');
-                    alert('✅ Document uplodat cu succes!');
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function showClientDetails(clientId) {
-            const client = appData.clients.find(c => c.id === clientId);
-            if (!client) return;
-            
-            const clientAppointments = appData.appointments.filter(apt => apt.clientId === clientId || apt.clientName === client.name);
-            const clientReminders = appData.reminders.filter(r => r.clientId === clientId || r.clientName === client.name);
-            
-            const documentsByCategory = {};
-            if (client.documents) {
-                client.documents.forEach(doc => {
-                    const category = doc.category || 'Necategorisite';
-                    if (!documentsByCategory[category]) {
-                        documentsByCategory[category] = [];
-                    }
-                    documentsByCategory[category].push(doc);
-                });
-            }
-            
-            const content = \`
-                <div style="margin-bottom: 2rem;">
-                    <h4 style="color: #1e293b; margin-bottom: 1rem; display: flex; align-items: center; gap: 12px;">
-                        📋 Informații Client
-                    </h4>
-                    <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6;">
-                        <p style="margin-bottom: 8px;"><strong>Nume:</strong> \${client.name}</p>
-                        <p style="margin-bottom: 8px;"><strong>Telefon:</strong> \${client.phone}</p>
-                        <p style="margin-bottom: 8px;"><strong>Email:</strong> \${client.email || 'Nu este specificat'}</p>
-                        <p style="margin-bottom: 8px;"><strong>Adresa:</strong> \${client.address}</p>
-                        <p><strong>Client din:</strong> \${new Date(client.createdAt).toLocaleDateString('ro-RO')}</p>
-                    </div>
-                </div>
-                
-                \${Object.keys(documentsByCategory).length > 0 ? \`
-                <div style="margin-bottom: 2rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h4 style="color: #1e293b; display: flex; align-items: center; gap: 12px;">
-                            📁 Arhiva Documente (\${client.documents.length})
-                        </h4>
-                        <button class="btn btn-primary" onclick="hideModal('clientDetailsModal'); uploadClientDocument(\${clientId})" style="padding: 12px 20px;">
-                            📎 Upload Nou
-                        </button>
-                    </div>
-                    \${Object.entries(documentsByCategory).map(([category, docs]) => \`
-                        <div class="category-section">
-                            <div class="category-header">
-                                \${getCategoryIcon(category)} \${category} (\${docs.length})
-                            </div>
-                            <div class="category-content">
-                                \${docs.map(doc => \`
-                                    <div class="document-item">
-                                        <div class="document-info">
-                                            <div class="document-name">\${doc.description || doc.name}</div>
-                                            <div class="document-meta">
-                                                \${doc.subcategory ? \`\${doc.subcategory} • \` : ''}\${new Date(doc.uploadDate).toLocaleDateString('ro-RO')} • \${(doc.size / 1024).toFixed(1)} KB
-                                            </div>
-                                            \${doc.notes ? \`<div class="document-notes">\${doc.notes}</div>\` : ''}
-                                        </div>
-                                        <button class="btn btn-primary" onclick="viewDocument('\${doc.id}', \${clientId})" style="padding: 8px 16px;">
-                                            👁️ Vezi
-                                        </button>
-                                    </div>
-                                \`).join('')}
-                            </div>
-                        </div>
-                    \`).join('')}
-                </div>
-                \` : \`
-                <div style="margin-bottom: 2rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h4 style="color: #1e293b; display: flex; align-items: center; gap: 12px;">
-                            📁 Arhiva Documente
-                        </h4>
-                        <button class="btn btn-primary" onclick="hideModal('clientDetailsModal'); uploadClientDocument(\${clientId})" style="padding: 12px 20px;">
-                            📎 Upload Primul Document
-                        </button>
-                    </div>
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📁</div>
-                        <p>Nu există documente uploadate încă</p>
-                    </div>
-                </div>
-                \`}
-                
-                \${clientAppointments.length > 0 ? \`
-                <div style="margin-bottom: 2rem;">
-                    <h4 style="color: #1e293b; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
-                        📅 Istoric Programări (\${clientAppointments.length})
-                    </h4>
-                    <div style="display: grid; gap: 12px;">
-                        \${clientAppointments.slice(0, 5).map(apt => \`
-                            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 16px; border-radius: 12px; border-left: 4px solid \${getStatusColor(apt.status)};">
-                                <div style="font-weight: 600; margin-bottom: 4px;">\${apt.service}</div>
-                                <div style="font-size: 0.875rem; color: #64748b;">
-                                    📅 \${new Date(apt.date).toLocaleDateString('ro-RO')} • ⏰ \${apt.time} • \${getStatusText(apt.status)}
-                                    \${apt.price ? \` • 💰 \${apt.price} RON\` : ''}
-                                </div>
-                            </div>
-                        \`).join('')}
-                        \${clientAppointments.length > 5 ? \`<div style="text-align: center; color: #64748b; font-size: 0.875rem; padding: 16px;">... și încă \${clientAppointments.length - 5} programări</div>\` : ''}
-                    </div>
-                </div>
-                \` : ''}
-            \`;
-            
-            document.getElementById('client-details-content').innerHTML = content;
-            showModal('clientDetailsModal');
-        }
-
-        function getCategoryIcon(category) {
-            const icons = {
-                'PV-uri': '📋',
-                'Documente': '📄',
-                'Fotografii': '📷',
-                'Tehnice': '🔧',
-                'Altele': '📁',
-                'Necategorisite': '📎'
-            };
-            return icons[category] || '📎';
-        }
-
-        function getCategoryColor(category) {
-            const colors = {
-                'PV-uri': '#3b82f6',
-                'Documente': '#10b981',
-                'Fotografii': '#f59e0b',
-                'Tehnice': '#8b5cf6',
-                'Altele': '#6b7280',
-                'Necategorisite': '#6b7280'
-            };
-            return colors[category] || '#6b7280';
-        }
-
-        function viewDocument(docId, clientId) {
-            const client = appData.clients.find(c => c.id === clientId);
-            if (!client || !client.documents) return;
-            
-            const document = client.documents.find(d => d.id == docId);
-            if (!document) return;
-            
-            if (document.type.startsWith('image/')) {
-                const newWindow = window.open();
-                newWindow.document.write(\`
-                    <html>
-                        <head>
-                            <title>\${document.name}</title>
-                            <style>
-                                body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #000; font-family: Inter, sans-serif; }
-                                img { max-width: 100%; max-height: 100%; object-fit: contain; }
-                                .info { position: absolute; top: 20px; left: 20px; color: white; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px; }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="info">\${document.description || document.name}</div>
-                            <img src="\${document.data}" alt="\${document.name}">
-                        </body>
-                    </html>
-                \`);
-            } else {
-                const link = document.createElement('a');
-                link.href = document.data;
-                link.download = document.name;
-                link.click();
-            }
-        }
-
-        function renderClients(clientsToRender = null) {
-            const clients = clientsToRender || appData.clients;
-            const container = document.getElementById('clients-list');
-            
-            if (clients.length === 0) {
-                container.innerHTML = \`
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <p>Nu aveți clienți încă</p>
-                        <button class="btn btn-primary" onclick="showModal('addClientModal')" style="margin-top: 16px;">
-                            ➕ Adaugă primul client
-                        </button>
-                    </div>
-                \`;
-                return;
-            }
-
-            container.innerHTML = clients.map(client => \`
-                <div class="list-item">
-                    <div class="avatar">\${client.name.charAt(0).toUpperCase()}</div>
-                    <div class="list-content">
-                        <div class="list-title">\${client.name}</div>
-                        <div class="list-subtitle">📞 \${client.phone} • 📍 \${client.address}</div>
-                        \${client.documents && client.documents.length > 0 ? \`
-                            <div class="document-category-badge">
-                                📎 \${client.documents.length} document\${client.documents.length > 1 ? 'e' : ''}
-                            </div>
-                        \` : ''}
-                    </div>
-                    <div class="action-buttons">
-                        <div class="flex gap-2">
-                            <button class="btn btn-primary" onclick="callClient('\${client.phone}')">
-                                📞 Sună
-                            </button>
-                            <button class="btn btn-success" onclick="showClientDetails(\${client.id})">
-                                👁️ Vezi Fișa
-                            </button>
-                        </div>
-                        <button class="btn btn-secondary" onclick="uploadClientDocument(\${client.id})">
-                            📎 Upload Document
-                        </button>
-                    </div>
-                </div>
-            \`).join('');
-        }
-
-        function searchClients(searchTerm) {
-            if (!searchTerm.trim()) {
-                renderClients();
-                return;
-            }
-
-            const filtered = appData.clients.filter(client =>
-                client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                client.phone.includes(searchTerm) ||
-                client.address.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            renderClients(filtered);
-        }
-
-        function callClient(phone) {
-            window.open(\`tel:\${phone}\`);
-        }
-
-        // Appointment functions
-        function addAppointment() {
-            const clientDropdown = document.getElementById('appointment-client-select');
-            const manualNameInput = document.getElementById('appointment-client-name');
-            const phone = document.getElementById('appointment-phone').value.trim();
-            const service = document.getElementById('appointment-service').value;
-            const address = document.getElementById('appointment-address').value.trim();
-            const date = document.getElementById('appointment-date').value;
-            const time = document.getElementById('appointment-time').value;
-            const price = document.getElementById('appointment-price').value;
-            const notes = document.getElementById('appointment-notes').value.trim();
-
-            let clientName = '';
-            let clientId = null;
-
-            if (clientDropdown.value === 'new-client') {
-                clientName = manualNameInput.value.trim();
-                if (!clientName) {
-                    alert('Te rog să introduci numele clientului!');
-                    return;
-                }
-            } else if (clientDropdown.value === '') {
-                alert('Te rog să selectezi un client sau să alegi "Client Nou"!');
-                return;
-            } else {
-                clientId = parseInt(clientDropdown.value);
-                const client = appData.clients.find(c => c.id === clientId);
-                if (client) {
-                    clientName = client.name;
-                }
-            }
-
-            if (!clientName || !phone || !service || !address || !date || !time) {
-                alert('Te rog să completezi toate câmpurile obligatorii!');
-                return;
-            }
-
-            const newAppointment = {
-                id: Date.now(),
-                clientId: clientId,
-                clientName: clientName,
-                phone: phone,
-                service: service,
-                address: address,
-                date: date,
-                time: time,
-                price: parseFloat(price) || 0,
-                notes: notes,
-                status: 'programat',
-                createdAt: new Date().toISOString()
-            };
-
-            appData.appointments.push(newAppointment);
-            
-            if (clientId === null) {
-                const existingClient = appData.clients.find(c => 
-                    c.name.toLowerCase() === clientName.toLowerCase() && c.phone === phone
-                );
-                
-                if (!existingClient) {
-                    const newClient = {
-                        id: Date.now() + 1,
-                        name: clientName,
-                        phone: phone,
-                        email: '',
-                        address: address,
-                        createdAt: new Date().toISOString(),
-                        totalServices: 0,
-                        documents: []
-                    };
-                    appData.clients.push(newClient);
-                }
-            }
-            
-            saveData();
-            updateUI();
-            hideModal('addAppointmentModal');
-        }
-
-        function renderAppointments(appointmentsToRender = null) {
-            const appointments = appointmentsToRender || appData.appointments;
-            const container = document.getElementById('appointments-list');
-            
-            if (appointments.length === 0) {
-                container.innerHTML = \`
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📅</div>
-                        <p>Nu aveți programări încă</p>
-                        <button class="btn btn-primary" onclick="showModal('addAppointmentModal')" style="margin-top: 16px;">
-                            ➕ Creează prima programare
-                        </button>
-                    </div>
-                \`;
-                return;
-            }
-
-            container.innerHTML = appointments.map(apt => \`
-                <div class="list-item">
-                    <div class="avatar" style="background: \${getStatusGradient(apt.status)}; color: white;">\${apt.clientName.charAt(0).toUpperCase()}</div>
-                    <div class="list-content">
-                        <div class="list-title">\${apt.clientName} - \${apt.service}</div>
-                        <div class="list-subtitle">
-                            📅 \${new Date(apt.date).toLocaleDateString('ro-RO')} • ⏰ \${apt.time} • 📍 \${apt.address}
-                            \${apt.price ? \` • 💰 \${apt.price} RON\` : ''}
-                        </div>
-                        <div style="margin-top: 8px;">
-                            <span class="status-badge status-\${apt.status.replace('-', '')}">
-                                \${getStatusIcon(apt.status)} \${getStatusText(apt.status)}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="action-buttons">
-                        <div class="flex gap-2">
-                            \${apt.status === 'programat' ? \`
-                                <button class="btn btn-success" onclick="updateAppointmentStatus(\${apt.id}, 'in-progres')" title="Marchează în progres">
-                                    ▶️
-                                </button>
-                            \` : ''}
-                            \${apt.status === 'in-progres' ? \`
-                                <button class="btn btn-success" onclick="updateAppointmentStatus(\${apt.id}, 'finalizat')" title="Marchează finalizat">
-                                    ✅
-                                </button>
-                            \` : ''}
-                            <button class="btn btn-primary" onclick="callClient('\${apt.phone}')" title="Sună clientul">
-                                📞
-                            </button>
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="btn btn-success" onclick="sendAppointmentWhatsApp('\${apt.phone}', '\${apt.clientName}', '\${apt.service}', '\${apt.date}', '\${apt.time}')" title="Trimite WhatsApp">
-                                📱 WhatsApp
-                            </button>
-                            <button class="btn btn-primary" onclick="sendAppointmentSMS('\${apt.phone}', '\${apt.clientName}', '\${apt.service}', '\${apt.date}', '\${apt.time}')" title="Trimite SMS">
-                                💬 SMS
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            \`).join('');
-        }
-
-        function getStatusGradient(status) {
-            switch (status) {
-                case 'finalizat': return 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-                case 'in-progres': return 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                default: return 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
-            }
-        }
-
-        function getStatusIcon(status) {
-            switch (status) {
-                case 'finalizat': return '✅';
-                case 'in-progres': return '⏳';
-                default: return '📅';
-            }
-        }
-
-        function searchAppointments(searchTerm) {
-            if (!searchTerm.trim()) {
-                renderAppointments();
-                return;
-            }
-
-            const filtered = appData.appointments.filter(apt =>
-                apt.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                apt.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                apt.address.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            renderAppointments(filtered);
-        }
-
-        function
+            document.getElementById('sync-status-text').textContent = isOnline ? 'Disponibil' : 'Offline';
+        });
+    </script>
+</body>
+</html>
